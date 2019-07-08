@@ -6,17 +6,18 @@ trait StatefulTransformer[T] {
 
   def apply(e: Ast): (Ast, StatefulTransformer[T]) =
     e match {
-      case e: Query               => apply(e)
-      case e: Operation           => apply(e)
-      case e: Action              => apply(e)
-      case e: Value               => apply(e)
-      case e: Assignment          => apply(e)
-      case e: Ident               => (e, this)
-      case e: OptionOperation     => apply(e)
-      case e: IterableOperation   => apply(e)
-      case e: Property            => apply(e)
-      case e: OnConflict.Existing => (e, this)
-      case e: OnConflict.Excluded => (e, this)
+      case e: Query                => apply(e)
+      case e: Operation            => apply(e)
+      case e: Action               => apply(e)
+      case e: Value                => apply(e)
+      case e: Assignment           => apply(e)
+      case e: Ident                => (e, this)
+      case e: ExternalIdent        => (e, this)
+      case e: OptionOperation      => apply(e)
+      case e: TraversableOperation => apply(e)
+      case e: Property             => apply(e)
+      case e: OnConflict.Existing  => (e, this)
+      case e: OnConflict.Excluded  => (e, this)
 
       case Function(a, b) =>
         val (bt, btt) = apply(b)
@@ -120,7 +121,7 @@ trait StatefulTransformer[T] {
       case OptionNone => (o, this)
     }
 
-  def apply(e: IterableOperation): (IterableOperation, StatefulTransformer[T]) =
+  def apply(e: TraversableOperation): (TraversableOperation, StatefulTransformer[T]) =
     e match {
       case MapContains(a, c) =>
         val (at, att) = apply(a)
@@ -259,6 +260,10 @@ trait StatefulTransformer[T] {
         val (at, att) = apply(a)
         val (ct, ctt) = att.apply(c)
         (Returning(at, b, ct), ctt)
+      case ReturningGenerated(a, b, c) =>
+        val (at, att) = apply(a)
+        val (ct, ctt) = att.apply(c)
+        (ReturningGenerated(at, b, ct), ctt)
       case Foreach(a, b, c) =>
         val (at, att) = apply(a)
         val (ct, ctt) = att.apply(c)

@@ -59,6 +59,10 @@ case class BetaReduction(map: IMap[Ast, Ast])
         val t = BetaReduction(map - alias)
         Returning(apply(action), alias, t(prop))
 
+      case ReturningGenerated(action, alias, prop) =>
+        val t = BetaReduction(map - alias)
+        ReturningGenerated(apply(action), alias, t(prop))
+
       case other =>
         super.apply(other)
     }

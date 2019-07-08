@@ -56,6 +56,8 @@ case class FreeVariables(state: State)
     action match {
       case q @ Returning(a, b, c) =>
         (q, free(a, b, c))
+      case q @ ReturningGenerated(a, b, c) =>
+        (q, free(a, b, c))
       case other =>
         super.apply(other)
     }

@@ -1,7 +1,8 @@
 package io.getquill.context.cassandra
 
-import io.getquill.ast.{ IterableOperation, _ }
+import io.getquill.ast.{ TraversableOperation, _ }
 import io.getquill.NamingStrategy
+import io.getquill.context.CannotReturn
 import io.getquill.util.Messages.fail
 import io.getquill.idiom.Idiom
 import io.getquill.idiom.StatementInterpolator._
@@ -10,7 +11,7 @@ import io.getquill.idiom.SetContainsToken
 import io.getquill.idiom.Token
 import io.getquill.util.Interleave
 
-object CqlIdiom extends CqlIdiom
+object CqlIdiom extends CqlIdiom with CannotReturn
 
 trait CqlIdiom extends Idiom {
 
@@ -29,17 +30,18 @@ trait CqlIdiom extends Idiom {
     Tokenizer[Ast] {
       case Aggregation(AggregationOperator.`size`, Constant(1)) =>
         "COUNT(1)".token
-      case a: Query             => a.token
-      case a: Operation         => a.token
-      case a: Action            => a.token
-      case a: Ident             => a.token
-      case a: Property          => a.token
-      case a: Value             => a.token
-      case a: Function          => a.body.token
-      case a: Infix             => a.token
-      case a: Lift              => a.token
-      case a: Assignment        => a.token
-      case a: IterableOperation => a.token
+      case a: Query                => a.token
+      case a: Operation            => a.token
+      case a: Action               => a.token
+      case a: Ident                => a.token
+      case a: ExternalIdent        => a.token
+      case a: Property             => a.token
+      case a: Value                => a.token
+      case a: Function             => a.body.token
+      case a: Infix                => a.token
+      case a: Lift                 => a.token
+      case a: Assignment           => a.token
+      case a: TraversableOperation => a.token
       case a @ (
         _: Function | _: FunctionApply | _: Dynamic | _: OptionOperation | _: Block |
         _: Val | _: Ordering | _: QuotedReference | _: If | _: OnConflict.Excluded | _: OnConflict.Existing
@@ -135,6 +137,10 @@ trait CqlIdiom extends Idiom {
     case e => strategy.default(e.name).token
   }
 
+  implicit def externalIdentTokenizer(implicit strategy: NamingStrategy): Tokenizer[ExternalIdent] = Tokenizer[ExternalIdent] {
+    case e => strategy.default(e.name).token
+  }
+
   implicit def assignmentTokenizer(implicit propertyTokenizer: Tokenizer[Property], strategy: NamingStrategy): Tokenizer[Assignment] = Tokenizer[Assignment] {
     case Assignment(alias, prop, value) =>
       stmt"${prop.token} = ${value.token}"
@@ -172,7 +178,7 @@ trait CqlIdiom extends Idiom {
       case Delete(table) =>
         stmt"TRUNCATE ${table.token}"
 
-      case _: Returning =>
+      case _: Returning | _: ReturningGenerated =>
         fail(s"Cql doesn't support returning generated during insertion")
 
       case other =>
@@ -184,8 +190,8 @@ trait CqlIdiom extends Idiom {
     case Entity(name, properties) => strategy.table(name).token
   }
 
-  implicit def traversableTokenizer(implicit strategy: NamingStrategy): Tokenizer[IterableOperation] =
-    Tokenizer[IterableOperation] {
+  implicit def traversableTokenizer(implicit strategy: NamingStrategy): Tokenizer[TraversableOperation] =
+    Tokenizer[TraversableOperation] {
       case MapContains(ast, body)  => stmt"${ast.token} CONTAINS KEY ${body.token}"
       case SetContains(ast, body)  => stmt"${ast.token} CONTAINS ${body.token}"
       case ListContains(ast, body) => stmt"${ast.token} CONTAINS ${body.token}"
