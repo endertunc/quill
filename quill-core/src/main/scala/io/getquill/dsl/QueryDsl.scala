@@ -57,7 +57,7 @@ private[dsl] trait QueryDsl {
 
     def flatMap[R](f: T => Query[R]): Query[R]
 
-    def concatMap[R, U](f: T => U)(implicit ev: U => Traversable[R]): Query[R]
+    def concatMap[R, U](f: T => U)(implicit ev: U => Iterable[R]): Query[R]
 
     def withFilter(f: T => Boolean): Query[T]
     def filter(f: T => Boolean): Query[T]

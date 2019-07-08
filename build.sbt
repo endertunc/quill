@@ -88,15 +88,18 @@ lazy val `quill-core` =
   crossProject(JVMPlatform, JSPlatform).crossType(superPure)
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
-    .settings(libraryDependencies ++= Seq(
-      "com.typesafe"               %  "config"        % "1.3.4",
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-      "org.scala-lang"             %  "scala-reflect" % scalaVersion.value
-    ))
-    .jsSettings(
-      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.5",
-      coverageExcludedPackages := ".*"
-    )
+.settings(
+  crossScalaVersions := Seq("2.11.12","2.12.7", "2.13.0"),
+  libraryDependencies ++= Seq(
+    "com.typesafe"               %  "config"        % "1.3.4",
+    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+    "org.scala-lang"             %  "scala-reflect" % scalaVersion.value
+  )
+)
+  .jsSettings(
+    libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.5",
+    coverageExcludedPackages := ".*"
+  )
 
 lazy val `quill-core-jvm` = `quill-core`.jvm
 lazy val `quill-core-js` = `quill-core`.js
@@ -125,7 +128,6 @@ lazy val `quill-codegen-jdbc` =
     .settings(
       fork in Test := true,
       libraryDependencies ++= Seq(
-        "com.github.choppythelumberjack" %% "tryclose" % "1.0.0",
         "org.scala-lang" % "scala-compiler" % scalaVersion.value % Test
       )
     )
@@ -479,10 +481,9 @@ lazy val basicSettings = Seq(
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq("2.11.12","2.12.7"),
   libraryDependencies ++= Seq(
-    "org.scalamacros" %% "resetallattrs"  % "1.0.0",
+    "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
     "org.scalatest"   %%% "scalatest"     % "3.0.8"          % Test,
     "ch.qos.logback"  % "logback-classic" % "1.2.3"          % Test,
-    "com.github.choppythelumberjack" %% "tryclose" % "1.0.0" % Test,
     "com.google.code.findbugs" % "jsr305" % "3.0.2"          % Provided // just to avoid warnings during compilation
   ) ++ {
     if (debugMacro) Seq(
@@ -517,24 +518,34 @@ lazy val basicSettings = Seq(
   EclipseKeys.eclipseOutput := Some("bin"),
   scalacOptions ++= Seq(
     "-Xfatal-warnings",
-    "-deprecation",
     "-encoding", "UTF-8",
     "-feature",
+    "-deprecation",
     "-unchecked",
-    "-Yno-adapted-args",
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard",
-    "-Xfuture"
+
   ),
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 13)) =>
+        Seq("-Ypatmat-exhaust-depth", "40")
       case Some((2, 11)) =>
-        Seq("-Xlint", "-Ywarn-unused-import", "" +
+        Seq("-Xlint",
+          "-Xfatal-warnings",
+          "-Xfuture",
+          "-deprecation",
+          "-Yno-adapted-args",
+          "-Ywarn-unused-import", "" +
           "-Xsource:2.12" // needed so existential types work correctly
         )
       case Some((2, 12)) =>
         Seq("-Xlint:-unused,_",
+
+          "-Xfuture",
+          "-deprecation",
+          "-Yno-adapted-args",
           "-Ywarn-unused:imports",
           "-Ycache-macro-class-loader:last-modified"
         )

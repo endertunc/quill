@@ -1,8 +1,9 @@
 package io.getquill.norm
 
 import io.getquill.ast._
+import scala.collection.immutable.{ Map => IMap }
 
-case class BetaReduction(map: collection.Map[Ast, Ast])
+case class BetaReduction(map: IMap[Ast, Ast])
   extends StatelessTransformer {
 
   override def apply(ast: Ast) =
@@ -38,7 +39,7 @@ case class BetaReduction(map: collection.Map[Ast, Ast])
 
       case Block(statements) =>
         apply {
-          statements.reverse.tail.foldLeft((collection.Map[Ast, Ast](), statements.last)) {
+          statements.reverse.tail.foldLeft((IMap[Ast, Ast](), statements.last)) {
             case ((map, stmt), line) =>
               BetaReduction(map)(line) match {
                 case Val(name, body) =>
