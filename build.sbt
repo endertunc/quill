@@ -88,14 +88,14 @@ lazy val `quill-core` =
   crossProject(JVMPlatform, JSPlatform).crossType(superPure)
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
-.settings(
-  crossScalaVersions := Seq("2.11.12","2.12.7", "2.13.0"),
-  libraryDependencies ++= Seq(
-    "com.typesafe"               %  "config"        % "1.3.4",
-    "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-    "org.scala-lang"             %  "scala-reflect" % scalaVersion.value
-  )
-)
+    .settings(
+      crossScalaVersions := Seq("2.11.12","2.12.7", "2.13.0"),
+      libraryDependencies ++= Seq(
+        "com.typesafe"               %  "config"        % "1.3.4",
+        "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+        "org.scala-lang"             %  "scala-reflect" % scalaVersion.value
+      )
+   )
   .jsSettings(
     libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.5",
     coverageExcludedPackages := ".*"
