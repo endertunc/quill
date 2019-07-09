@@ -10,11 +10,14 @@
  * additional information regarding copyright ownership.
  */
 
-package scala.util
+package io.getquill.util
 
+import scala.util._
 import scala.util.control.{ ControlThrowable, NonFatal }
 
 /**
+ * Copied from scala 2.13.0 source code. Hope won't break lis
+ *
  * A utility for performing automatic resource management. It can be used to perform an
  * operation using resources, after which it releases the resources in reverse order
  * of their creation.

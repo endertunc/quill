@@ -23,12 +23,13 @@ object DbHelper {
   import com.github.choppythelumberjack.tryclose.JavaImplicits._
 
   private def getDatabaseType(ds: DataSource) = {
-    for {
-      conn <- TryClose(ds.getConnection)
-      meta <- TryClose.wrap(conn.getMetaData)
-      productType <- TryClose.wrap(meta.get.getDatabaseProductName)
-    } yield wrap(DatabaseType.fromProductName(productType.get))
-  }.unwrap.asTry.flatMap(t => t).orThrow
+    Manager {
+      val conn = use(ds.getConnection)
+      val meta = conn.getMetaData
+      val productType = meta.get.getDatabaseProductName
+      DatabaseType.fromProductName(productType.get)
+    }.orThrow
+  }
 
   def syncDbRun(rawSql: String, ds: DataSource): Try[Unit] = {
     val databaseType = getDatabaseType(ds)

@@ -481,10 +481,10 @@ lazy val basicSettings = Seq(
   scalaVersion := "2.11.12",
   crossScalaVersions := Seq("2.11.12","2.12.7"),
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1",
-    "org.scalatest"   %%% "scalatest"     % "3.0.8"          % Test,
-    "ch.qos.logback"  % "logback-classic" % "1.2.3"          % Test,
-    "com.google.code.findbugs" % "jsr305" % "3.0.2"          % Provided // just to avoid warnings during compilation
+    "org.scala-lang.modules"   %%% "scala-collection-compat" % "2.1.1",
+    "org.scalatest"            %%% "scalatest"               % "3.0.8"          % Test,
+    "ch.qos.logback"           %   "logback-classic"         % "1.2.3"          % Test,
+    "com.google.code.findbugs" %   "jsr305"                  % "3.0.2"          % Provided // just to avoid warnings during compilation
   ) ++ {
     if (debugMacro) Seq(
       "org.scala-lang"   %  "scala-library"     % scalaVersion.value,
