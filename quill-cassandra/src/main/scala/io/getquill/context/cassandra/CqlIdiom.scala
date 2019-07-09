@@ -30,17 +30,17 @@ trait CqlIdiom extends Idiom {
     Tokenizer[Ast] {
       case Aggregation(AggregationOperator.`size`, Constant(1)) =>
         "COUNT(1)".token
-      case a: Query                => a.token
-      case a: Operation            => a.token
-      case a: Action               => a.token
-      case a: Ident                => a.token
-      case a: ExternalIdent        => a.token
-      case a: Property             => a.token
-      case a: Value                => a.token
-      case a: Function             => a.body.token
-      case a: Infix                => a.token
-      case a: Lift                 => a.token
-      case a: Assignment           => a.token
+      case a: Query             => a.token
+      case a: Operation         => a.token
+      case a: Action            => a.token
+      case a: Ident             => a.token
+      case a: ExternalIdent     => a.token
+      case a: Property          => a.token
+      case a: Value             => a.token
+      case a: Function          => a.body.token
+      case a: Infix             => a.token
+      case a: Lift              => a.token
+      case a: Assignment        => a.token
       case a: IterableOperation => a.token
       case a @ (
         _: Function | _: FunctionApply | _: Dynamic | _: OptionOperation | _: Block |
