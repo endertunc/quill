@@ -1,6 +1,6 @@
 package io.getquill.context.cassandra
 
-import io.getquill.ast.{ TraversableOperation, _ }
+import io.getquill.ast.{ IterableOperation, _ }
 import io.getquill.NamingStrategy
 import io.getquill.context.CannotReturn
 import io.getquill.util.Messages.fail
@@ -41,7 +41,7 @@ trait CqlIdiom extends Idiom {
       case a: Infix                => a.token
       case a: Lift                 => a.token
       case a: Assignment           => a.token
-      case a: TraversableOperation => a.token
+      case a: IterableOperation => a.token
       case a @ (
         _: Function | _: FunctionApply | _: Dynamic | _: OptionOperation | _: Block |
         _: Val | _: Ordering | _: QuotedReference | _: If | _: OnConflict.Excluded | _: OnConflict.Existing
@@ -190,8 +190,8 @@ trait CqlIdiom extends Idiom {
     case Entity(name, properties) => strategy.table(name).token
   }
 
-  implicit def traversableTokenizer(implicit strategy: NamingStrategy): Tokenizer[TraversableOperation] =
-    Tokenizer[TraversableOperation] {
+  implicit def traversableTokenizer(implicit strategy: NamingStrategy): Tokenizer[IterableOperation] =
+    Tokenizer[IterableOperation] {
       case MapContains(ast, body)  => stmt"${ast.token} CONTAINS KEY ${body.token}"
       case SetContains(ast, body)  => stmt"${ast.token} CONTAINS ${body.token}"
       case ListContains(ast, body) => stmt"${ast.token} CONTAINS ${body.token}"
