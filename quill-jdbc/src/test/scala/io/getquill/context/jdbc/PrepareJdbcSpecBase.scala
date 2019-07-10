@@ -48,11 +48,11 @@ trait PrepareJdbcSpecBase extends ProductSpec {
     val r = Manager { use =>
       val c = use(conn)
       val st = use(prep(c))
-      st.executeQuery()
+      val rs = st.executeQuery()
+      ResultSetExtractor(rs, extractor)
     }
     r match {
-      case Success(rs) =>
-        ResultSetExtractor(rs, extractor)
+      case Success(v) => v
       case Failure(e) => throw e
     }
   }
