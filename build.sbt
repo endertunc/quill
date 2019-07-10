@@ -88,8 +88,8 @@ lazy val `quill-core` =
   crossProject(JVMPlatform, JSPlatform).crossType(superPure)
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
+    .settings(enableScala213Build: _*)
     .settings(
-      crossScalaVersions := Seq("2.11.12","2.12.7", "2.13.0"),
       libraryDependencies ++= Seq(
         "com.typesafe"               %  "config"        % "1.3.4",
         "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
@@ -194,6 +194,7 @@ def includeIfOracle[T](t:T):Seq[T] =
 
 lazy val `quill-jdbc` =
   (project in file("quill-jdbc"))
+    .settings(enableScala213Build: _*)
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
     .settings(jdbcTestingSettings: _*)
@@ -201,6 +202,7 @@ lazy val `quill-jdbc` =
 
 lazy val `quill-monix` =
   (project in file("quill-monix"))
+
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
     .settings(
@@ -431,6 +433,10 @@ def updateWebsiteTag =
 
     st
   })
+
+lazy val enableScala213Build = Seq(
+  crossScalaVersions := Seq("2.11.12","2.12.7", "2.13.0")
+)
 
 lazy val jdbcTestingSettings = Seq(
   fork in Test := true,
