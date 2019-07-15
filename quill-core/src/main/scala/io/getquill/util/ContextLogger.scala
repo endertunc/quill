@@ -11,6 +11,10 @@ class ContextLogger(name: String) {
   private val bindsEnabled = sys.props.get("quill.binds.log").contains("true")
   private val nullToken = "null"
 
+  def logError(info: String, e: Throwable) = {
+    underlying.info(info, e)
+  }
+
   def logQuery(query: String, params: Seq[Any]): Unit = {
     if (!bindsEnabled || params.isEmpty) underlying.debug(query)
     else {

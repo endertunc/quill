@@ -28,6 +28,8 @@ trait Context[Idiom <: io.getquill.idiom.Idiom, Naming <: NamingStrategy]
   case class BatchGroup(string: String, prepare: List[Prepare])
   case class BatchGroupReturning(string: String, returningBehavior: ReturnAction, prepare: List[Prepare])
 
+  def logContextError[A](locInfo: String, r: Result[A]): Result[A] = r
+
   def probe(statement: String): Try[_]
 
   def idiom: Idiom

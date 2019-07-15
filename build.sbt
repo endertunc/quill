@@ -21,6 +21,10 @@ lazy val asyncModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
   `quill-finagle-mysql`, `quill-finagle-postgres`
 )
 
+lazy val asyncEffectModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
+  `quill-effect`, `quill-effect-postgres`, `quill-effect-mysql`
+)
+
 lazy val codegenModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
   `quill-codegen`, `quill-codegen-jdbc`, `quill-codegen-tests`
 )
@@ -66,6 +70,8 @@ lazy val `quill` =
     .dependsOn(filteredModules: _*)
 
 publishArtifact in `quill` := false
+
+
 
 lazy val superPure = new sbtcrossproject.CrossType {
   def projectDir(crossBase: File, projectType: String): File =
@@ -115,6 +121,32 @@ lazy val `quill-sql` =
 
 lazy val `quill-sql-jvm` = `quill-sql`.jvm
 lazy val `quill-sql-js` = `quill-sql`.js
+
+lazy val `quill-effect` = (project in file("quill-effect"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.dripower" %% "db-async-common"  % "0.3.109",
+      "org.typelevel" %% "cats-effect" % "2.0.0-M4"
+    )
+  ).dependsOn(`quill-core-jvm`)
+
+lazy val `quill-effect-mysql` = (project in file("quill-effect-mysql"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.dripower" %% "mysql-async"      % "0.3.109",
+    )
+  ).dependsOn(`quill-effect`)
+
+lazy val `quill-effect-postgres` = (project in file("quill-effect-postgres"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.dripower" %% "postgresql-async"      % "0.3.109"
+    )
+  ).dependsOn(`quill-effect`)
+
 
 
 lazy val `quill-codegen` =
