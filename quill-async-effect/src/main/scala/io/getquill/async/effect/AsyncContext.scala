@@ -76,7 +76,7 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
     F.toIO(pool.close()).unsafeRunSync()
   }
 
-  protected def extractActionResult[O](returningAction: ReturnAction, extractor: Extractor[O])(result: DBQueryResult): O
+
 
   protected def expandAction(sql: String, returningAction: ReturnAction) = sql
 
@@ -84,9 +84,7 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
     pool.withConnection { c => fromFuture(f(c)) }
   }
 
-  protected def extractActionResult[O](returningColumn: String, extractor: Extractor[O])(result: DBQueryResult): O
-
-  protected def expandAction(sql: String, returningColumn: String) = sql
+  protected def extractActionResult[O](returningAction: ReturnAction, extractor: Extractor[O])(result: DBQueryResult): O
 
   def probe(sql: String) =
     Try {

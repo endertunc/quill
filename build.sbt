@@ -22,7 +22,7 @@ lazy val asyncModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
 )
 
 lazy val asyncEffectModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
-  `quill-effect`, `quill-effect-postgres`, `quill-effect-mysql`
+  `quill-effect`, `quill-async-effect`, `quill-effect-postgres`, `quill-effect-mysql`
 )
 
 lazy val codegenModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
