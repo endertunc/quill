@@ -1,27 +1,29 @@
 package io.getquill.context.async
 
+import io.getquill.context.Context
 import java.time.{ LocalDate, LocalDateTime, ZoneId, ZonedDateTime }
 import java.util.Date
-
 import org.joda.time.{ DateTimeZone => JodaDateTimeZone, DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalDateTime => JodaLocalDateTime }
 
 trait Encoders {
-  this: AsyncContext[_, _, _] =>
+  this: Context[_, _] =>
 
   type Encoder[T] = AsyncEncoder[T]
 
   type EncoderSqlType = SqlTypes.SqlTypes
 
-  case class AsyncEncoder[T](sqlType: DecoderSqlType)(implicit encoder: BaseEncoder[T])
+  type PrepareRow = List[Any]
+
+  case class AsyncEncoder[T](sqlType: EncoderSqlType)(implicit encoder: BaseEncoder[T])
     extends BaseEncoder[T] {
     override def apply(index: Index, value: T, row: PrepareRow) =
       encoder.apply(index, value, row)
   }
 
-  def encoder[T](sqlType: DecoderSqlType): Encoder[T] =
+  def encoder[T](sqlType: EncoderSqlType): Encoder[T] =
     encoder(identity[T], sqlType)
 
-  def encoder[T](f: T => Any, sqlType: DecoderSqlType): Encoder[T] =
+  def encoder[T](f: T => Any, sqlType: EncoderSqlType): Encoder[T] =
     AsyncEncoder[T](sqlType)(new BaseEncoder[T] {
       def apply(index: Index, value: T, row: PrepareRow) =
         row :+ f(value)

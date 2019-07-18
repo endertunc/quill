@@ -3,12 +3,12 @@ package io.getquill.context.async
 import java.time.LocalDate
 import java.util.Date
 
-import io.getquill.PostgresAsyncContext
+import io.getquill.context.sql.SqlContext
 import io.getquill.context.sql.encoding.ArrayEncoding
 import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalDateTime => JodaLocalDateTime }
 
 trait ArrayEncoders extends ArrayEncoding {
-  self: PostgresAsyncContext[_] =>
+  self: SqlContext[_, _] with Encoders =>
 
   implicit def arrayStringEncoder[Col <: Seq[String]]: Encoder[Col] = arrayRawEncoder[String, Col]
   implicit def arrayBigDecimalEncoder[Col <: Seq[BigDecimal]]: Encoder[Col] = arrayRawEncoder[BigDecimal, Col]

@@ -1,19 +1,21 @@
 package io.getquill.context.async
 
+import com.github.mauricio.async.db.RowData
+import io.getquill.util.Messages.fail
+import io.getquill.context.Context
 import java.time._
 import java.util.Date
-
-import io.getquill.util.Messages.fail
 import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalDateTime => JodaLocalDateTime }
-
 import scala.reflect.{ ClassTag, classTag }
 
 trait Decoders {
-  this: AsyncContext[_, _, _] =>
+  this: Context[_, _] =>
 
   type Decoder[T] = AsyncDecoder[T]
 
   type DecoderSqlType = SqlTypes.SqlTypes
+
+  type ResultRow = RowData
 
   case class AsyncDecoder[T](sqlType: DecoderSqlType)(implicit decoder: BaseDecoder[T])
     extends BaseDecoder[T] {

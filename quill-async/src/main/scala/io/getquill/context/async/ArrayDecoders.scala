@@ -3,7 +3,7 @@ package io.getquill.context.async
 import java.time.LocalDate
 import java.util.Date
 
-import io.getquill.PostgresAsyncContext
+import io.getquill.context.sql.SqlContext
 import io.getquill.context.sql.encoding.ArrayEncoding
 import io.getquill.util.Messages.fail
 import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalDateTime => JodaLocalDateTime }
@@ -11,7 +11,7 @@ import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, Loc
 import scala.reflect.ClassTag
 
 trait ArrayDecoders extends ArrayEncoding {
-  self: PostgresAsyncContext[_] =>
+  self: SqlContext[_, _] with Decoders =>
 
   implicit def arrayStringDecoder[Col <: Seq[String]](implicit bf: CBF[String, Col]): Decoder[Col] = arrayRawEncoder[String, Col]
   implicit def arrayBigDecimalDecoder[Col <: Seq[BigDecimal]](implicit bf: CBF[BigDecimal, Col]): Decoder[Col] = arrayRawEncoder[BigDecimal, Col]

@@ -5,7 +5,7 @@ import com.github.mauricio.async.db.postgresql.PostgreSQLConnection
 import com.github.mauricio.async.db.{ QueryResult => DBQueryResult }
 import com.typesafe.config.Config
 import io.getquill.ReturnAction.{ ReturnColumns, ReturnNothing, ReturnRecord }
-import io.getquill.context.async.{ ArrayDecoders, ArrayEncoders, AsyncContext, UUIDObjectEncoding }
+import io.getquill.context.async._
 import io.getquill.util.LoadConfig
 import io.getquill.util.Messages.fail
 
