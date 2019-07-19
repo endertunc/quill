@@ -13,6 +13,7 @@ import io.getquill.context.{ CanReturnField, Context }
 import io.getquill.context.sql.idiom.ConcatSupport
 
 class SqlContextSpec extends Spec {
+  val testContext = io.getquill.context.sql.testContext
 
   "binds inputs according to the sql terms order" - {
     "filter.update" in {

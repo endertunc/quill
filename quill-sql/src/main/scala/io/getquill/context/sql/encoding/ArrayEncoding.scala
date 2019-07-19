@@ -4,6 +4,7 @@ import java.time.LocalDate
 import java.util.Date
 
 import io.getquill.context.sql.SqlContext
+
 import scala.collection.compat._
 import scala.language.higherKinds
 
@@ -36,22 +37,21 @@ trait ArrayEncoding {
   implicit def arrayDateDecoder[Col <: Seq[Date]](implicit bf: CBF[Date, Col]): Decoder[Col]
   implicit def arrayLocalDateDecoder[Col <: Seq[LocalDate]](implicit bf: CBF[LocalDate, Col]): Decoder[Col]
 
-  implicit def arrayMappedEncoder[I, O, Col[_] <: Seq[I]](
+  implicit def arrayMappedEncoder[I, O, Col[X] <: Seq[X]](
     implicit
     mapped: MappedEncoding[I, O],
-    e:      Encoder[Seq[O]],
-    bf:     CBF[I, Col[I]]
+    e:      Encoder[Seq[O]]
   ): Encoder[Col[I]] = {
     mappedEncoder[Col[I], Seq[O]](MappedEncoding((col: Col[I]) => col.map(mapped.f)), e)
   }
 
-  implicit def arrayMappedDecoder[I, O, Col[_] <: Seq[O]](
+  implicit def arrayMappedDecoder[I, O, Col[X] <: Seq[X]](
     implicit
     mapped: MappedEncoding[I, O],
     d:      Decoder[Seq[I]],
-    bf:     CBF[O, Col[O]]
+    bf:     Factory[O, Col[O]]
   ): Decoder[Col[O]] = {
     mappedDecoder[Seq[I], Col[O]](MappedEncoding((col: Seq[I]) =>
-      col.foldLeft(bf.newBuilder)((b, x) => b += mapped.f(x)).result()), d)
+      col.foldLeft(bf.newBuilder)((b, x) => b += mapped.f(x)).result), d)
   }
 }
