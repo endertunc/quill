@@ -15,7 +15,7 @@ trait ArrayEncodingBaseSpec extends Spec with BeforeAndAfterEach {
     texts:      List[String],
     decimals:   Seq[BigDecimal],
     bools:      Vector[Boolean],
-    bytes:      ListBuffer[Byte],
+    bytes:      List[Byte],
     shorts:     IndexedSeq[Short],
     ints:       Seq[Int],
     longs:      Seq[Long],
@@ -25,7 +25,7 @@ trait ArrayEncodingBaseSpec extends Spec with BeforeAndAfterEach {
     dates:      Seq[LocalDate]
   )
 
-  val e = ArraysTestEntity(List("test"), Seq(BigDecimal(2.33)), Vector(true, true), ListBuffer(1),
+  val e = ArraysTestEntity(List("test"), Seq(BigDecimal(2.33)), Vector(true, true), List(1),
     IndexedSeq(3), Seq(2), Seq(1, 2, 3), Seq(1f, 2f), Seq(4d, 3d),
     Seq(new Date(System.currentTimeMillis())), Seq(LocalDate.now()))
 

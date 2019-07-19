@@ -108,6 +108,7 @@ lazy val `quill-sql` =
   crossProject(JVMPlatform, JSPlatform).crossType(superPure)
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
+    .settings(enableScala213Build: _*)
     .jsSettings(
       coverageExcludedPackages := ".*"
     )
