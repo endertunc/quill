@@ -27,7 +27,6 @@ object Using {
 
   def apply[R: Releasable, A](resource: => R)(f: R => A): Try[A] = Try { Using.resource(resource)(f) }
 
-
   final class Manager private {
     import Manager._
 
