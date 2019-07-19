@@ -6,7 +6,7 @@ import org.scalatest.Matchers._
 class CaseClassQueryAsyncSpec extends CaseClassQuerySpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   override def beforeAll =
     awaitIO {

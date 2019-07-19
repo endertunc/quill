@@ -1,12 +1,11 @@
 package io.getquill.context.async.postgres
 
-
 import io.getquill.context.sql.DepartmentsSpec
 
 class DepartmentsPostgresAsyncSpec extends DepartmentsSpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   override def beforeAll =
     awaitIO {

@@ -3,11 +3,11 @@ package io.getquill.context.async.postgres
 import cats.effect.IO
 import com.github.mauricio.async.db.QueryResult
 import io.getquill.ReturnAction.ReturnColumns
-import io.getquill.{ Literal, PostgresAsyncEffectContext, ReturnAction, Spec , PostgresDialect}
+import io.getquill.{ Literal, PostgresAsyncEffectContext, ReturnAction, Spec, PostgresDialect }
 
 class PostgresAsyncContextSpec extends Spec {
 
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   "run non-batched action" in {
     val insert = quote { (i: Int) =>

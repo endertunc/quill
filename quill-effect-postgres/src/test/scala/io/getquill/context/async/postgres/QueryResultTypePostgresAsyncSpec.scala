@@ -2,8 +2,7 @@ package io.getquill.context.async.postgres
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import scala.collection.JavaConverters.collectionAsScalaIterableConverter
-import scala.collection.JavaConverters.seqAsJavaListConverter
+import scala.jdk.CollectionConverters._
 import scala.math.BigDecimal.int2bigDecimal
 
 import io.getquill.context.sql.QueryResultTypeSpec
@@ -11,7 +10,7 @@ import io.getquill.context.sql.QueryResultTypeSpec
 class QueryResultTypePostgresAsyncSpec extends QueryResultTypeSpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   val insertedProducts = new ConcurrentLinkedQueue[Product]
 

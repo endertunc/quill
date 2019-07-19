@@ -5,7 +5,7 @@ import io.getquill.context.sql.PeopleSpec
 class PeoplePostgresAsyncSpec extends PeopleSpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   override def beforeAll =
     awaitIO {

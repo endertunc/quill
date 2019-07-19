@@ -32,7 +32,7 @@ trait ArrayDecoders extends ArrayEncoding {
     AsyncDecoder[Col](SqlTypes.ARRAY)(new BaseDecoder[Col] {
       def apply(index: Index, row: ResultRow): Col = {
         row(index) match {
-          case seq: IndexedSeq[Any] => seq.foldLeft(bf.newBuilder) {
+          case seq: scala.collection.IndexedSeq[Any] => seq.foldLeft(bf.newBuilder) {
             case (b, x: I) => b += mapper(x)
             case (_, x)    => fail(s"Array at index $index contains element of ${x.getClass.getCanonicalName}, but expected $iTag")
           }.result

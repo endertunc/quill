@@ -2,11 +2,10 @@ package io.getquill.context.async.postgres
 
 import io.getquill.context.sql.ArrayOpsSpec
 
-
 class ArrayOpsAsyncSpec extends ArrayOpsSpec {
   val ctx = testContext
 
-  import ctx.{io => _, _}
+  import ctx.{ io => _, _ }
 
   "contains" in {
     awaitIO(ctx.io(`contains`.`Ex 1 return all`).run) mustBe `contains`.`Ex 1 expected`

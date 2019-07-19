@@ -7,10 +7,9 @@ import io.getquill.context.sql.EncodingTestType
 import io.getquill.context.sql.encoding.ArrayEncodingBaseSpec
 import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalDateTime => JodaLocalDateTime }
 
-
 class ArrayAsyncEncodingSpec extends ArrayEncodingBaseSpec {
   val ctx = testContext
-  import ctx.{io => _, _}
+  import ctx.{ io => _, _ }
 
   val q = quote(query[ArraysTestEntity])
 
@@ -62,7 +61,7 @@ class ArrayAsyncEncodingSpec extends ArrayEncodingBaseSpec {
       override implicit def arrayLocalDateDecoder[Col <: Seq[LocalDate]](implicit bf: CBF[LocalDate, Col]): Decoder[Col] =
         arrayDecoder[LocalDate, LocalDate, Col](identity)
     }
-    import newCtx.{io => _, _}
+    import newCtx.{ io => _, _ }
     awaitIO(newCtx.io(query[ArraysTestEntity].insert(lift(e))).run)
     intercept[IllegalStateException] {
       awaitIO(newCtx.io(query[ArraysTestEntity]).run).head mustBe e

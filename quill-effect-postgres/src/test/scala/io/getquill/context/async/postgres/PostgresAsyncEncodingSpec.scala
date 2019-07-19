@@ -10,7 +10,7 @@ import java.util.UUID
 class PostgresAsyncEncodingSpec extends EncodingSpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   "encodes and decodes types" in {
     val r =
@@ -109,7 +109,7 @@ class PostgresAsyncEncodingSpec extends EncodingSpec {
   "encodes custom type inside singleton object" in {
     object Singleton {
       def apply()(implicit c: TestContext) = {
-        import c.{io => _, _}
+        import c.{ io => _, _ }
         for {
           _ <- c.io(query[EncodingTestEntity].delete)
           result <- c.io(liftQuery(insertValues).foreach(e => query[EncodingTestEntity].insert(e)))
