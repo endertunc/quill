@@ -134,7 +134,7 @@ lazy val `quill-effect` = (project in file("quill-effect"))
 lazy val `quill-async-effect` = (project in file("quill-async-effect"))
   .settings(commonSettings: _*)
   .settings(enableScala213Build: _*)
-  .dependsOn(`quill-effect`, `quill-async`)
+  .dependsOn(`quill-effect`, `quill-async` % "compile->compile;test->test")
 
 lazy val `quill-effect-mysql` = (project in file("quill-effect-mysql"))
   .settings(commonSettings: _*)
@@ -143,7 +143,7 @@ lazy val `quill-effect-mysql` = (project in file("quill-effect-mysql"))
     libraryDependencies ++= Seq(
       "com.dripower" %% "mysql-async"      % "0.3.109"
     )
-  ).dependsOn(`quill-async-effect`)
+  ).dependsOn(`quill-async-effect` % "compile->compile;test->test")
 
 lazy val `quill-effect-postgres` = (project in file("quill-effect-postgres"))
   .settings(commonSettings: _*)
@@ -152,7 +152,7 @@ lazy val `quill-effect-postgres` = (project in file("quill-effect-postgres"))
     libraryDependencies ++= Seq(
       "com.dripower" %% "postgresql-async"      % "0.3.109"
     )
-  ).dependsOn(`quill-async-effect`)
+  ).dependsOn(`quill-async-effect` % "compile->compile;test->test")
 
 
 
