@@ -1,4 +1,4 @@
-package io.getquill.context.async.postgres
+package io.getquill.async.effect.postgres
 
 import io.getquill.context.sql.OnConflictSpec
 

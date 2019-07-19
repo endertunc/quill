@@ -1,4 +1,4 @@
-package io.getquill.context.async.postgres
+package io.getquill.async.effect.postgres
 
 import cats.effect.IO
 import com.github.mauricio.async.db.QueryResult

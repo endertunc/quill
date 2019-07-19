@@ -1,4 +1,4 @@
-package io.getquill.context.async.postgres
+package io.getquill.async.effect.postgres
 
 import cats.effect.IO
 import io.getquill.context.sql.{ TestDecoders, TestEncoders }

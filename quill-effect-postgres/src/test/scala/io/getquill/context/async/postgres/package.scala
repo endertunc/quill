@@ -1,4 +1,4 @@
-package io.getquill.context.async
+package io.getquill.async.effect
 
 import cats.effect._
 import scala.concurrent.ExecutionContext

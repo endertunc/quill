@@ -76,7 +76,17 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
   protected def expandAction(sql: String, returningAction: ReturnAction) = sql
 
   protected def performEffect[A](f: C => Future[A], transactional: Boolean) = {
-    pool.withConnection { c => fromFuture(f(c)) }
+    pool.withConnection { c =>
+      if (transactional) {
+        fromFuture {
+          c.inTransaction { cc =>
+            f(cc.asInstanceOf[C])
+          }
+        }
+      } else {
+        fromFuture(f(c))
+      }
+    }
   }
 
   protected def extractActionResult[O](returningAction: ReturnAction, extractor: Extractor[O])(result: DBQueryResult): O
