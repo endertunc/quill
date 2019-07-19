@@ -6,8 +6,6 @@ import java.util.Date
 import io.getquill.{ MappedEncoding, Spec }
 import org.scalatest.{ Assertion, BeforeAndAfterEach }
 
-import scala.collection.mutable.ListBuffer
-
 trait ArrayEncodingBaseSpec extends Spec with BeforeAndAfterEach {
 
   // Support all sql base types and `Seq` implementers
