@@ -5,17 +5,17 @@ import io.getquill.context.sql.PeopleSpec
 class PeopleMysqlAsyncSpec extends PeopleSpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   override def beforeAll =
     awaitIO {
 
-       val acts = for {
-          _ <- testContext.io(query[Couple].delete)
-          _ <- testContext.io(query[Person].filter(_.age > 0).delete)
-          _ <- testContext.io(liftQuery(peopleEntries).foreach(e => peopleInsert(e)))
-          _ <- testContext.io(liftQuery(couplesEntries).foreach(e => couplesInsert(e)))
-        } yield {}
+      val acts = for {
+        _ <- testContext.io(query[Couple].delete)
+        _ <- testContext.io(query[Person].filter(_.age > 0).delete)
+        _ <- testContext.io(liftQuery(peopleEntries).foreach(e => peopleInsert(e)))
+        _ <- testContext.io(liftQuery(couplesEntries).foreach(e => couplesInsert(e)))
+      } yield {}
       acts.runTrans
     }
 

@@ -4,8 +4,6 @@ import com.github.mauricio.async.db.Connection
 import com.github.mauricio.async.db.{ QueryResult => DBQueryResult }
 import com.github.mauricio.async.db.RowData
 
-
-
 import cats.effect._
 import cats.syntax.all._
 import cats.instances.list._
@@ -13,7 +11,7 @@ import com.github.mauricio.async.db.{ QueryResult => DBQueryResult, _ }
 import com.github.mauricio.async.db.RowData
 
 import io.getquill.effect._
-import io.getquill.context.async.{Encoders, Decoders}
+import io.getquill.context.async.{ Encoders, Decoders }
 import io.getquill.context.sql.SqlContext
 import io.getquill.context.sql.idiom.SqlIdiom
 import io.getquill.NamingStrategy
@@ -25,11 +23,9 @@ import io.getquill.{ NamingStrategy, ReturnAction }
 import io.getquill.util.ContextLogger
 import io.getquill.context.{ Context, TranslateContext }
 
-
 import scala.language.higherKinds
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import scala.concurrent.Future
-
 
 abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Connection](val idiom: D, val naming: N, pool: Pool[F, C])(implicit _F: ConcurrentEffect[F], CS: ContextShift[F])
   extends Context[D, N]
@@ -54,7 +50,8 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
 
   private def fromFuture[A](f: => Future[A]): F[A] = {
     def toF: F[A] = {
-      f.value match {
+      val strict = f
+      strict.value match {
         case Some(result) =>
           result match {
             case Success(a) => F.pure(a)
@@ -62,7 +59,7 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
           }
         case _ =>
           F.async { cb =>
-            f.onComplete(r => cb(r match {
+            strict.onComplete(r => cb(r match {
               case Success(a) => Right(a)
               case Failure(e) => Left(e)
             }))(_root_.io.getquill.effect.trampoline)
@@ -75,8 +72,6 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
   override def close = {
     F.toIO(pool.close()).unsafeRunSync()
   }
-
-
 
   protected def expandAction(sql: String, returningAction: ReturnAction) = sql
 

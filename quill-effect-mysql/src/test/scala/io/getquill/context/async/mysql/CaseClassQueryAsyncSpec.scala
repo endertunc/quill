@@ -6,16 +6,16 @@ import org.scalatest.Matchers._
 class CaseClassQueryAsyncSpec extends CaseClassQuerySpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   override def beforeAll =
     awaitIO {
-        val act = for {
-          _ <- testContext.io(query[Contact].delete)
-          _ <- testContext.io(query[Address].delete)
-          _ <- testContext.io(liftQuery(peopleEntries).foreach(e => peopleInsert(e)))
-          _ <- testContext.io(liftQuery(addressEntries).foreach(e => addressInsert(e)))
-        } yield {}
+      val act = for {
+        _ <- testContext.io(query[Contact].delete)
+        _ <- testContext.io(query[Address].delete)
+        _ <- testContext.io(liftQuery(peopleEntries).foreach(e => peopleInsert(e)))
+        _ <- testContext.io(liftQuery(addressEntries).foreach(e => addressInsert(e)))
+      } yield {}
       act.runTrans
     }
 

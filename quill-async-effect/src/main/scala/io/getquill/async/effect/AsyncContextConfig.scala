@@ -68,7 +68,8 @@ abstract class AsyncContextConfig[F[_]: Timer, C <: Connection](
 
   private def fromFuture[A](f: => Future[A]): F[A] = {
     def toF: F[A] = {
-      f.value match {
+      val strictF = f
+      strictF.value match {
         case Some(result) =>
           result match {
             case Success(a) => F.pure(a)
@@ -76,7 +77,7 @@ abstract class AsyncContextConfig[F[_]: Timer, C <: Connection](
           }
         case _ =>
           F.async { cb =>
-            f.onComplete(r => cb(r match {
+            strictF.onComplete(r => cb(r match {
               case Success(a) => Right(a)
               case Failure(e) => Left(e)
             }))(io.getquill.effect.trampoline)

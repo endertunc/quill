@@ -8,7 +8,7 @@ import io.getquill.{ Literal, MysqlAsyncEffectContext, ReturnAction, Spec }
 
 class MysqlAsyncEffectContextSpec extends Spec {
 
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   "run non-batched action" in {
     val insert = quote { (i: Int) =>

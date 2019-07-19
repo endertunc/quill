@@ -9,7 +9,7 @@ import io.getquill.context.sql.Id
 class ProductMysqlAsyncSpec extends ProductSpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   override def beforeAll = {
     awaitIO(testContext.io(quote(query[Product].delete)).run)

@@ -2,10 +2,9 @@ package io.getquill.async.effect.mysql
 
 import io.getquill.context.sql.OnConflictSpec
 
-
 class OnConflictAsyncSpec extends OnConflictSpec {
   val ctx = testContext
-  import ctx.{io => _, _}
+  import ctx.{ io => _, _ }
 
   override protected def beforeAll(): Unit = {
     awaitIO(ctx.io(qr1.delete).run)

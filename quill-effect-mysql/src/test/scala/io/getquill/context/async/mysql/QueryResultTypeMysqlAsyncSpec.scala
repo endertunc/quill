@@ -11,7 +11,7 @@ import io.getquill.context.sql.QueryResultTypeSpec
 class QueryResultTypeMysqlAsyncSpec extends QueryResultTypeSpec {
 
   val context = testContext
-  import testContext.{io => _, _}
+  import testContext.{ io => _, _ }
 
   val insertedProducts = new ConcurrentLinkedQueue[Product]
 
