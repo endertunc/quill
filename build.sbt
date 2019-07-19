@@ -114,6 +114,7 @@ lazy val `quill-sql` =
   crossProject(JVMPlatform, JSPlatform).crossType(superPure)
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
+    .settings(enableScala213Build: _*)
     .jsSettings(
       coverageExcludedPackages := ".*"
     )
@@ -320,6 +321,7 @@ lazy val `quill-async` =
   (project in file("quill-async"))
     .settings(commonSettings: _*)
     .settings(mimaSettings: _*)
+    .settings(enableScala213Build: _*)
     .settings(
       fork in Test := true,
       libraryDependencies ++= Seq(

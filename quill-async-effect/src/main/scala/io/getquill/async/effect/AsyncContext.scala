@@ -91,7 +91,7 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
     logger.logQuery(sql, params)
     c.sendPreparedStatement(sql, values).map {
       _.rows match {
-        case Some(rows) => rows.map(extractor)
+        case Some(rows) => rows.toVector.map(extractor)
         case None       => Nil
       }
     }

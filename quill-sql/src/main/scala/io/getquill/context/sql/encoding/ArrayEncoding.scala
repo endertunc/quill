@@ -4,14 +4,13 @@ import java.time.LocalDate
 import java.util.Date
 
 import io.getquill.context.sql.SqlContext
-
-import scala.collection.generic.CanBuildFrom
+import scala.collection.compat._
 import scala.language.higherKinds
 
 trait ArrayEncoding {
   self: SqlContext[_, _] =>
 
-  type CBF[T, Col] = CanBuildFrom[Nothing, T, Col]
+  type CBF[T, Col] = Factory[T, Col]
 
   implicit def arrayStringEncoder[Col <: Seq[String]]: Encoder[Col]
   implicit def arrayBigDecimalEncoder[Col <: Seq[BigDecimal]]: Encoder[Col]
@@ -41,7 +40,7 @@ trait ArrayEncoding {
     implicit
     mapped: MappedEncoding[I, O],
     e:      Encoder[Seq[O]],
-    bf:     CanBuildFrom[Nothing, I, Col[I]]
+    bf:     CBF[I, Col[I]]
   ): Encoder[Col[I]] = {
     mappedEncoder[Col[I], Seq[O]](MappedEncoding((col: Col[I]) => col.map(mapped.f)), e)
   }
@@ -50,9 +49,9 @@ trait ArrayEncoding {
     implicit
     mapped: MappedEncoding[I, O],
     d:      Decoder[Seq[I]],
-    bf:     CanBuildFrom[Nothing, O, Col[O]]
+    bf:     CBF[O, Col[O]]
   ): Decoder[Col[O]] = {
     mappedDecoder[Seq[I], Col[O]](MappedEncoding((col: Seq[I]) =>
-      col.foldLeft(bf())((b, x) => b += mapped.f(x)).result()), d)
+      col.foldLeft(bf.newBuilder)((b, x) => b += mapped.f(x)).result()), d)
   }
 }

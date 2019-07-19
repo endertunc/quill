@@ -1,6 +1,6 @@
 package io.getquill.effect
 
-import cats.effect._
+import cats.effect.Async
 import cats.MonadError
 import cats.instances.future._
 import io.getquill.context.Context
