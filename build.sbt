@@ -619,4 +619,32 @@ def doOnPush(steps: ReleaseStep*): Seq[ReleaseStep] =
   else
     Seq[ReleaseStep](steps: _*)
 
-lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ basicSettings
+lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ basicSettings ++ Seq(
+  releaseProcess := {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 11)) =>
+        doOnDefault(checkSnapshotDependencies) ++
+        doOnDefault(inquireVersions) ++
+        doOnDefault(runClean) ++
+        doOnDefault(setReleaseVersion) ++
+        doOnDefault(updateReadmeVersion(_._1)) ++
+        doOnPush   (commitReleaseVersion) ++
+        doOnPush   (updateWebsiteTag) ++
+        doOnPush   (tagRelease) ++
+        doOnDefault(publishArtifacts) ++
+        doOnPush   (setNextVersion) ++
+        doOnPush   (updateReadmeVersion(_._2)) ++
+        doOnPush   (commitNextVersion) ++
+        //doOnPush(releaseStepCommand("sonatypeReleaseAll")) ++
+        doOnPush   (pushChanges)
+      case Some((2, 12)) =>
+        doOnDefault(checkSnapshotDependencies) ++
+        doOnDefault(inquireVersions) ++
+        doOnDefault(runClean) ++
+        doOnDefault(setReleaseVersion) ++
+        doOnDefault(publishArtifacts)
+        //doOnPush   ("sonatypeReleaseAll") ++
+      case _ => Seq[ReleaseStep]()
+    }
+  }
+)
