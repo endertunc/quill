@@ -34,7 +34,7 @@ lazy val bigdataModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
 )
 
 lazy val allModules =
-  baseModules ++ dbModules ++ asyncModules ++ asyncEffectModules ++ codegenModules ++ bigdataModules
+  baseModules ++ dbModules ++ asyncModules ++ asyncEffectModules ++ codegenModules ++ bigdataModules ++ asyncEffectModules
 
 lazy val filteredModules = {
   val modulesStr = sys.props.get("modules")
