@@ -19,13 +19,46 @@ class ArrayEncodingSpec extends Spec {
   "Provide array support with MappingEncoding" - {
     "encoders" in {
       import impl.{ encodeRaw, encodeDecor }
-      arrayMappedEncoder[Decor, Raw, Vector]
+      implicitly[Encoder[List[Decor]]]
     }
     "decoders" in {
       import impl.{ decodeRaw, decodeDecor }
-      val d1 = implicitly[Decoder[Vector[Decor]]]
-      println(d1.getClass)
+      implicitly[Decoder[Vector[Decor]]]
     }
   }
 
+  "Do not compile in case of missing MappedEncoding" - {
+    "encoders" in {
+      import impl.encodeRaw
+      "implicitly[Encoder[List[Decor]]]" mustNot compile
+    }
+    "decoders" in {
+      import impl.decodeRaw
+      "implicitly[Decoder[Vector[Decor]]]" mustNot compile
+    }
+  }
+
+  "Do not compile in case of missing base encoding" - {
+    "encoders" in {
+      import impl.encodeDecor
+      "implicitly[Encoder[List[Decor]]]" mustNot compile
+    }
+    "decoders" in {
+      import impl.decodeDecor
+      "implicitly[Decoder[Vector[Decor]]]" mustNot compile
+    }
+  }
+
+  "Do not compile in case of upper bound types to Seq or not applicable types" - {
+    "encoders" in {
+      import impl.encodeDecor
+      implicit val e = encoder[Traversable[Raw]]
+      "implicitly[Encoder[List[Decor]]]" mustNot compile
+    }
+    "decoders" in {
+      import impl.decodeDecor
+      implicit val d = decoder[Set[Raw]]
+      "implicitly[Decoder[Vector[Decor]]]" mustNot compile
+    }
+  }
 }
