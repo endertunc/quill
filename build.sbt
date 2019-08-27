@@ -128,7 +128,7 @@ lazy val `quill-effect` = (project in file("quill-effect"))
   .settings(enableScala213Build: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % "2.0.0-M4"
+      "org.typelevel" %% "cats-effect" % "2.0.0-RC2"
     )
   ).dependsOn(`quill-sql-jvm`)
 
@@ -482,7 +482,7 @@ def updateWebsiteTag =
   })
 
 lazy val enableScala213Build = Seq(
-  crossScalaVersions := Seq("2.11.12","2.12.7", "2.13.0")
+  crossScalaVersions := Seq("2.12.9", "2.13.0")
 )
 
 lazy val jdbcTestingSettings = Seq(
@@ -531,8 +531,8 @@ def excludePathsIfOracle(paths:Seq[String]) = {
 
 lazy val basicSettings = Seq(
   organization := "io.getquill",
-  scalaVersion := "2.11.12",
-  crossScalaVersions := Seq("2.11.12","2.12.7"),
+  scalaVersion := "2.12.9",
+  crossScalaVersions := Seq("2.12.9"),
   libraryDependencies ++= Seq(
     "org.scala-lang.modules"   %%% "scala-collection-compat" % "2.1.1",
     "org.scalatest"            %%% "scalatest"               % "3.0.8"          % Test,
