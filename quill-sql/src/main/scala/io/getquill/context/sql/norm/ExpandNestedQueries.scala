@@ -1,5 +1,6 @@
 package io.getquill.context.sql.norm
 
+import io.getquill.NamingStrategy
 import io.getquill.ast.Ast
 import io.getquill.ast.Ident
 import io.getquill.ast._
@@ -16,9 +17,16 @@ import io.getquill.context.sql.TableContext
 import io.getquill.context.sql.UnaryOperationSqlQuery
 import io.getquill.context.sql.FlatJoinContext
 
-object ExpandNestedQueries {
+import scala.collection.mutable.LinkedHashSet
 
-  def apply(q: SqlQuery, references: collection.Set[Property]): SqlQuery =
+class ExpandNestedQueries(strategy: NamingStrategy) {
+
+  def apply(q: SqlQuery, references: List[Property]): SqlQuery =
+    apply(q, LinkedHashSet.empty ++ references)
+
+  // Using LinkedHashSet despite the fact that it is mutable because it has better characteristics then ListSet.
+  // Also this collection is strictly internal to ExpandNestedQueries and exposed anywhere else.
+  private def apply(q: SqlQuery, references: LinkedHashSet[Property]): SqlQuery =
     q match {
       case q: FlattenSqlQuery =>
         expandNested(q.copy(select = expandSelect(q.select, references)))
@@ -31,7 +39,7 @@ object ExpandNestedQueries {
   private def expandNested(q: FlattenSqlQuery): SqlQuery =
     q match {
       case FlattenSqlQuery(from, where, groupBy, orderBy, limit, offset, select, distinct) =>
-        val asts = Nil ++ where ++ groupBy ++ orderBy.map(_.ast) ++ limit ++ offset ++ select.map(_.ast)
+        val asts = Nil ++ select.map(_.ast) ++ where ++ groupBy ++ orderBy.map(_.ast) ++ limit ++ offset
         val from = q.from.map(expandContext(_, asts))
         q.copy(from = from)
     }
@@ -47,7 +55,7 @@ object ExpandNestedQueries {
       case _: TableContext | _: InfixContext => s
     }
 
-  private def expandSelect(select: List[SelectValue], references: collection.Set[Property]) = {
+  private def expandSelect(select: List[SelectValue], references: LinkedHashSet[Property]) = {
 
     object TupleIndex {
       def unapply(s: String): Option[Int] =
@@ -56,6 +64,9 @@ object ExpandNestedQueries {
         else
           None
     }
+
+    def expandColumn(name: String, renameable: Renameable): String =
+      renameable.fixedOr(name)(strategy.column(name))
 
     def expandReference(ref: Property): SelectValue = {
 
@@ -70,36 +81,41 @@ object ExpandNestedQueries {
             case SelectValue(ast, alias, c) =>
               SelectValue(ast, concat(alias, idx), c)
           }
-        case Property(ast: Property, name) =>
+        case Property.Opinionated(ast: Property, name, renameable) =>
           expandReference(ast) match {
             case SelectValue(ast, nested, c) =>
-              SelectValue(Property(ast, name), Some(s"${nested.getOrElse("")}$name"), c)
+              // Alias is the name of the column after the naming strategy
+              // The clauses in `SqlIdiom` that use `Tokenizer[SelectValue]` select the
+              // alias field when it's value is Some(T).
+              // Technically the aliases of a column should not be using naming strategies
+              // but this is an issue to fix at a later date.
+              SelectValue(Property.Opinionated(ast, name, renameable), Some(s"${nested.getOrElse("")}${expandColumn(name, renameable)}"), c)
           }
         case Property(_, TupleIndex(idx)) =>
           select(idx) match {
             case SelectValue(ast, alias, c) =>
               SelectValue(ast, concat(alias, idx), c)
           }
-        case Property(_, name) =>
+        case Property.Opinionated(_, name, renameable) =>
           select match {
             case List(SelectValue(cc: CaseClass, alias, c)) =>
-              SelectValue(cc.values.toMap.apply(name), Some(name), c)
+              SelectValue(cc.values.toMap.apply(name), Some(expandColumn(name, renameable)), c)
             case List(SelectValue(i: Ident, _, c)) =>
-              SelectValue(Property(i, name), None, c)
+              SelectValue(Property.Opinionated(i, name, renameable), None, c)
             case other =>
-              SelectValue(Ident(name), Some(name), false)
+              SelectValue(Ident(name), Some(expandColumn(name, renameable)), false)
           }
       }
     }
 
-    references.toList.sortBy(_.ast.toString).toList match {
+    references.toList match {
       case Nil  => select
       case refs => refs.map(expandReference)
     }
   }
 
   private def references(alias: String, asts: List[Ast]) =
-    References(State(Ident(alias), Nil))(asts)(_.apply)._2.state.references.toSet
+    LinkedHashSet.empty ++ (References(State(Ident(alias), Nil))(asts)(_.apply)._2.state.references)
 }
 
 case class State(ident: Ident, references: List[Property])
