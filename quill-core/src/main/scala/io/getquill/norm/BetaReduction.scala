@@ -1,6 +1,5 @@
 package io.getquill.norm
 
-//import io.getquill.ast.Renameable.ByStrategy
 import io.getquill.ast._
 
 case class BetaReduction(replacements: Replacements)
@@ -39,7 +38,7 @@ case class BetaReduction(replacements: Replacements)
 
       case Block(statements) =>
         apply {
-          statements.reverse.tail.foldLeft((Replacements.empty, statements.last)) {
+          statements.reverse.tail.foldLeft((scala.collection.immutable.Map.empty[Ast, Ast], statements.last)) {
             case ((map, stmt), line) =>
               BetaReduction(Replacements(map))(line) match {
                 case Val(name, body) =>
