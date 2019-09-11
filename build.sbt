@@ -132,7 +132,7 @@ lazy val `quill-effect` = (project in file("quill-effect"))
   .settings(enableScala213Build: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % "2.0.0-RC2"
+      "org.typelevel" %% "cats-effect" % "2.0.0"
     )
   ).dependsOn(`quill-sql-jvm`)
 
