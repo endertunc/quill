@@ -5,7 +5,10 @@ import io.getquill.util.Messages.fail
 import io.getquill.context.Context
 import java.time._
 import java.util.Date
-import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalDateTime => JodaLocalDateTime }
+
+import io.getquill.util.Messages.fail
+import org.joda.time.{ DateTime => JodaDateTime, LocalDate => JodaLocalDate, LocalTime => JodaLocalTime, LocalDateTime => JodaLocalDateTime }
+
 import scala.reflect.{ ClassTag, classTag }
 
 trait Decoders {
@@ -146,8 +149,14 @@ trait Decoders {
   implicit val decodeZonedDateTime: MappedEncoding[JodaDateTime, ZonedDateTime] =
     MappedEncoding(jdt => ZonedDateTime.ofInstant(Instant.ofEpochMilli(jdt.getMillis), ZoneId.of(jdt.getZone.getID)))
 
+  implicit val decodeOffsetDateTime: MappedEncoding[JodaDateTime, OffsetDateTime] =
+    MappedEncoding(jdt => OffsetDateTime.ofInstant(Instant.ofEpochMilli(jdt.getMillis), ZoneId.of(jdt.getZone.getID)))
+
   implicit val decodeLocalDate: MappedEncoding[JodaLocalDate, LocalDate] =
     MappedEncoding(jld => LocalDate.of(jld.getYear, jld.getMonthOfYear, jld.getDayOfMonth))
+
+  implicit val decodeLocalTime: MappedEncoding[JodaLocalTime, LocalTime] =
+    MappedEncoding(jlt => LocalTime.of(jlt.getHourOfDay, jlt.getMinuteOfHour, jlt.getSecondOfMinute))
 
   implicit val decodeLocalDateTime: MappedEncoding[JodaLocalDateTime, LocalDateTime] =
     MappedEncoding(jldt => LocalDateTime.ofInstant(jldt.toDate.toInstant, ZoneId.systemDefault()))

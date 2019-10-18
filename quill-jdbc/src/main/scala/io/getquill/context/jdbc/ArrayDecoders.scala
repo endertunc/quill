@@ -8,6 +8,7 @@ import java.math.{ BigDecimal => JBigDecimal }
 import scala.collection.compat._
 import io.getquill.context.sql.encoding.ArrayEncoding
 import io.getquill.util.Messages.fail
+import scala.collection.compat._
 import scala.reflect.ClassTag
 
 trait ArrayDecoders extends ArrayEncoding {
@@ -39,7 +40,7 @@ trait ArrayDecoders extends ArrayEncoding {
   def arrayDecoder[I, O, Col <: Seq[O]](mapper: I => O)(implicit bf: CBF[O, Col], tag: ClassTag[I]): Decoder[Col] = {
     decoder[Col]((idx: Index, row: ResultRow) => {
       val arr = row.getArray(idx)
-      if (arr == null) bf.newBuilder.result
+      if (arr == null) bf.newBuilder.result()
       else arr.getArray.asInstanceOf[Array[AnyRef]].foldLeft(bf.newBuilder) {
         case (b, x: I)                => b += mapper(x)
         case (b, x: java.lang.Number) => b += mapper(x.asInstanceOf[I])

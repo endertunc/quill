@@ -15,18 +15,25 @@ class ActionMacro(val c: MacroContext)
   import c.universe.{ Function => _, Ident => _, _ }
 
   def translateQuery(quoted: Tree): Tree =
+    translateQueryPrettyPrint(quoted, q"false")
+
+  def translateQueryPrettyPrint(quoted: Tree, prettyPrint: Tree): Tree =
     c.untypecheck {
       q"""
         ..${EnableReflectiveCalls(c)}
         val expanded = ${expand(extractAst(quoted))}
         ${c.prefix}.translateQuery(
           expanded.string,
-          expanded.prepare
+          expanded.prepare,
+          prettyPrint = ${prettyPrint}
         )
       """
     }
 
   def translateBatchQuery(quoted: Tree): Tree =
+    translateBatchQueryPrettyPrint(quoted, q"false")
+
+  def translateBatchQueryPrettyPrint(quoted: Tree, prettyPrint: Tree): Tree =
     expandBatchAction(quoted) {
       case (batch, param, expanded) =>
         q"""
@@ -38,7 +45,8 @@ class ActionMacro(val c: MacroContext)
             }.groupBy(_._1).map {
               case (string, items) =>
                 ${c.prefix}.BatchGroup(string, items.map(_._2).toList)
-            }.toList
+            }.toList,
+            ${prettyPrint}
           )
         """
     }
@@ -72,8 +80,8 @@ class ActionMacro(val c: MacroContext)
   def runBatchAction(quoted: Tree): Tree =
     batchAction(quoted, "executeBatchAction")
 
-  def bindBatchAction(quoted: Tree): Tree =
-    batchAction(quoted, "bindBatchAction")
+  def prepareBatchAction(quoted: Tree): Tree =
+    batchAction(quoted, "prepareBatchAction")
 
   def batchAction(quoted: Tree, method: String): Tree =
     expandBatchAction(quoted) {
@@ -145,12 +153,12 @@ class ActionMacro(val c: MacroContext)
       })
     """
 
-  def bindAction(quoted: Tree): Tree =
+  def prepareAction(quoted: Tree): Tree =
     c.untypecheck {
       q"""
         ..${EnableReflectiveCalls(c)}
         val expanded = ${expand(extractAst(quoted))}
-        ${c.prefix}.bindAction(
+        ${c.prefix}.prepareAction(
           expanded.string,
           expanded.prepare
         )

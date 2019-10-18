@@ -84,6 +84,8 @@ trait IOMonad {
 
     def map[S](f: T => S): IO[S, E] = transform(_.map(f))
 
+    def *>[S, E2 <: Effect](next: IO[S, E2]) = flatMap(_ => next)
+
     def flatMap[S, E2 <: Effect](f: T => IO[S, E2]): IO[S, E with E2] =
       transformWith {
         case Success(s)     => f(s)
