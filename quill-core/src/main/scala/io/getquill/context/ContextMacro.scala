@@ -39,10 +39,13 @@ trait ContextMacro extends Quotation {
     }
 
   private implicit val tokenLiftable: Liftable[Token] = Liftable[Token] {
-    case StringToken(string)        => q"io.getquill.idiom.StringToken($string)"
-    case ScalarLiftToken(lift)      => q"io.getquill.idiom.ScalarLiftToken(${lift: Lift})"
-    case Statement(tokens)          => q"io.getquill.idiom.Statement(scala.List(..$tokens))"
-    case SetContainsToken(a, op, b) => q"io.getquill.idiom.SetContainsToken($a, $op, $b)"
+    case StringToken(string) => q"io.getquill.idiom.StringToken($string)"
+    case ScalarLiftToken(lift) =>
+      q"io.getquill.idiom.ScalarLiftToken(${lift: Lift})"
+    case Statement(tokens) =>
+      q"io.getquill.idiom.Statement(scala.List(..$tokens))"
+    case SetContainsToken(a, op, b) =>
+      q"io.getquill.idiom.SetContainsToken($a, $op, $b)"
   }
 
   private def translateStatic(ast: Ast): Tree = {
@@ -64,7 +67,9 @@ trait ContextMacro extends Quotation {
 
         q"($normalizedAst, ${statement: Token})"
       case Failure(ex) =>
-        c.info(s"Can't translate query at compile time because the idiom and/or the naming strategy aren't known at this point.")
+        c.info(
+          s"Can't translate query at compile time because the idiom and/or the naming strategy aren't known at this point."
+        )
         translateDynamic(ast)
     }
   }
@@ -96,5 +101,12 @@ trait ContextMacro extends Quotation {
     } yield {
       (idiom, naming)
     }
+  }
+
+  protected def logged(tree: Tree): Tree = {
+    val pos = c.internal.enclosingOwner.pos
+    val locInfo =
+      s"${pos.source.file.container.name}/${pos.source.file.name}(${pos.line},${pos.column})"
+    q"${c.prefix}.logContextError(${locInfo}, ${tree})"
   }
 }

@@ -104,13 +104,15 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
             )
            """
         case _ =>
-          q"""
-            ${c.prefix}.${TermName(method.name)}(
-              expanded.string,
-              expanded.prepare,
-              row => $decoder(0, row)
-            )
-           """
+          logged {
+            q"""
+              ${c.prefix}.${TermName(method.name)}(
+                expanded.string,
+                expanded.prepare,
+                row => $decoder(0, row)
+              )
+             """
+          }
       }
 
     c.untypecheck {
@@ -173,13 +175,15 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
             )
            """
         case _ =>
-          q"""
+          logged {
+            q"""
             ${c.prefix}.${TermName(method.name)}(
               expanded.string,
               expanded.prepare,
               $meta.extract
             )
            """
+          }
       }
 
     c.untypecheck {

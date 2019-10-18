@@ -52,20 +52,23 @@ class ActionMacro(val c: MacroContext)
     }
 
   def runAction(quoted: Tree): Tree =
-    c.untypecheck {
-      q"""
-        ..${EnableReflectiveCalls(c)}
-        val expanded = ${expand(extractAst(quoted))}
-        ${c.prefix}.executeAction(
-          expanded.string,
-          expanded.prepare
-        )
-      """
+    logged {
+      c.untypecheck {
+        q"""
+          ..${EnableReflectiveCalls(c)}
+          val expanded = ${expand(extractAst(quoted))}
+          ${c.prefix}.executeAction(
+            expanded.string,
+            expanded.prepare
+          )
+        """
+      }
     }
 
   def runActionReturning[T](quoted: Tree)(implicit t: WeakTypeTag[T]): Tree =
-    c.untypecheck {
-      q"""
+    logged {
+      c.untypecheck {
+        q"""
         ..${EnableReflectiveCalls(c)}
         val expanded = ${expand(extractAst(quoted))}
         ${c.prefix}.executeActionReturning(
@@ -75,6 +78,7 @@ class ActionMacro(val c: MacroContext)
           $returningColumn
         )
       """
+      }
     }
 
   def runBatchAction(quoted: Tree): Tree =
@@ -133,9 +137,9 @@ class ActionMacro(val c: MacroContext)
                   CaseClassValueLift("value", value)
               }
             val (ast, _) = reifyLiftings(BetaReduction(body, alias -> nestedLift))
-            c.untypecheck {
+            logged(c.untypecheck {
               call(batch, param, expand(ast))
-            }
+            })
         }
       case other =>
         c.fail(s"Batch actions must be static quotations. Found: '$other'")

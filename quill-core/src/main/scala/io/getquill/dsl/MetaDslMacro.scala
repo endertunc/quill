@@ -6,7 +6,10 @@ import scala.reflect.macros.whitebox.{ Context => MacroContext }
 class MetaDslMacro(val c: MacroContext) extends ValueComputation {
   import c.universe._
 
-  def schemaMeta[T](entity: Tree, columns: Tree*)(implicit t: WeakTypeTag[T]): Tree =
+  def schemaMeta[T](entity: Tree, columns: Tree*)(
+    implicit
+    t: WeakTypeTag[T]
+  ): Tree =
     c.untypecheck {
       q"""
         new ${c.prefix}.SchemaMeta[$t] {
@@ -18,8 +21,11 @@ class MetaDslMacro(val c: MacroContext) extends ValueComputation {
       """
     }
 
-  def queryMeta[T, R](expand: Tree)(extract: Tree)(implicit t: WeakTypeTag[T], r: WeakTypeTag[R]): Tree =
-    c.untypecheck {
+  def queryMeta[T, R](
+    expand: Tree
+  )(extract: Tree)(implicit t: WeakTypeTag[T], r: WeakTypeTag[R]): Tree = {
+    val start = System.currentTimeMillis
+    val result = c.untypecheck {
       q"""
         new ${c.prefix}.QueryMeta[$t] {
           private[this] val _expand = $expand
@@ -28,7 +34,12 @@ class MetaDslMacro(val c: MacroContext) extends ValueComputation {
             (r: ${c.prefix}.ResultRow) => $extract(implicitly[${c.prefix}.QueryMeta[$r]].extract(r))
         }
       """
+
     }
+    val end = System.currentTimeMillis
+    c.info(s"[Quill-Profile] queryMeta - ${end - start}")
+    result
+  }
 
   def insertMeta[T](exclude: Tree*)(implicit t: WeakTypeTag[T]): Tree =
     actionMeta[T](value("Encoder", t.tpe, exclude: _*), "insert")
@@ -63,7 +74,9 @@ class MetaDslMacro(val c: MacroContext) extends ValueComputation {
           }
         """
     } else {
-      c.fail(s"Can't materialize a `SchemaMeta` for non-case-class type '${t.tpe}', please provide an implicit `SchemaMeta`.")
+      c.fail(
+        s"Can't materialize a `SchemaMeta` for non-case-class type '${t.tpe}', please provide an implicit `SchemaMeta`."
+      )
     }
 
   private def expandQuery[T](value: Value)(implicit t: WeakTypeTag[T]) = {
@@ -92,7 +105,11 @@ class MetaDslMacro(val c: MacroContext) extends ValueComputation {
 
         case Nested(_, tpe, params, optional) =>
           if (parentOptional || optional) {
-            val groups = params.map(_.map(v => expand(v, parentOptional = true) -> v.nestedAndOptional))
+            val groups = params.map(
+              _.map(
+                v => expand(v, parentOptional = true) -> v.nestedAndOptional
+              )
+            )
             val terms =
               groups.zipWithIndex.map {
                 case (options, idx1) =>
@@ -117,7 +134,10 @@ class MetaDslMacro(val c: MacroContext) extends ValueComputation {
     q"(row: ${c.prefix}.ResultRow) => ${expand(value)}"
   }
 
-  private def actionMeta[T](value: Value, method: String)(implicit t: WeakTypeTag[T]) = {
+  private def actionMeta[T](value: Value, method: String)(
+    implicit
+    t: WeakTypeTag[T]
+  ) = {
     val assignments =
       flatten(q"v", value)
         .zip(flatten(q"value", value))
@@ -129,7 +149,11 @@ class MetaDslMacro(val c: MacroContext) extends ValueComputation {
       q"""
         new ${c.prefix}.${TypeName(method.capitalize + "Meta")}[$t] {
           private[this] val _expand =
-            ${c.prefix}.quote((q: ${c.prefix}.EntityQuery[$t], value: $t) => q.${TermName(method)}(..$assignments))
+            ${c.prefix}.quote((q: ${c.prefix}.EntityQuery[$t], value: $t) => q.${
+        TermName(
+          method
+        )
+      }(..$assignments))
           def expand = _expand
         }
       """
