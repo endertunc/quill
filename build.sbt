@@ -675,7 +675,7 @@ def doOnPush(steps: ReleaseStep*): Seq[ReleaseStep] =
 lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ basicSettings ++ Seq(
   releaseProcess := {
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 12)) =>
+      case Some((2, 11)) =>
         doOnDefault(checkSnapshotDependencies) ++
         doOnDefault(inquireVersions) ++
         doOnDefault(runClean) ++
@@ -689,6 +689,12 @@ lazy val commonSettings = ReleasePlugin.extraReleaseCommands ++ basicSettings ++
         doOnPush   (updateReadmeVersion(_._2)) ++
         doOnPush   (commitNextVersion) ++
         doOnPush   (pushChanges)
+      case Some((2, 12)) =>
+        doOnDefault(checkSnapshotDependencies) ++
+        doOnDefault(inquireVersions) ++
+        doOnDefault(runClean) ++
+        doOnPush   (setReleaseVersion) ++
+        doOnDefault(publishArtifacts)
       case Some((2, 13)) =>
         doOnDefault(checkSnapshotDependencies) ++
         doOnDefault(inquireVersions) ++

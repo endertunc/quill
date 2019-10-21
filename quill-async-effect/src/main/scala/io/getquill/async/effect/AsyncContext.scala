@@ -24,8 +24,8 @@ import io.getquill.util.ContextLogger
 import io.getquill.context.{ Context, TranslateContext }
 
 import scala.language.higherKinds
-import scala.util.{ Try, Success, Failure }
 import scala.concurrent.Future
+import scala.util.Try
 
 abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Connection](val idiom: D, val naming: N, pool: Pool[F, C])(implicit _F: ConcurrentEffect[F], CS: ContextShift[F])
   extends Context[D, N]
@@ -48,26 +48,7 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
   override type RunBatchActionResult = Seq[Long]
   override type RunBatchActionReturningResult[T] = Seq[T]
 
-  private def fromFuture[A](f: => Future[A]): F[A] = {
-    def toF: F[A] = {
-      val strict = f
-      strict.value match {
-        case Some(result) =>
-          result match {
-            case Success(a) => F.pure(a)
-            case Failure(e) => F.raiseError(e)
-          }
-        case _ =>
-          F.async { cb =>
-            strict.onComplete(r => cb(r match {
-              case Success(a) => Right(a)
-              case Failure(e) => Left(e)
-            }))(_root_.io.getquill.effect.trampoline)
-          }
-      }
-    }
-    F.guarantee(F.defer(toF))(CS.shift)
-  }
+  private def fromFuture[A](f: => Future[A]): F[A] = Async.fromFuture { F.delay(f) }
 
   override def close = {
     F.toIO(pool.close()).unsafeRunSync()
