@@ -45,11 +45,16 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
   def prepareQuery[T](quoted: Tree)(implicit t: WeakTypeTag[T]): Tree =
     expandQuery[T](quoted, PrepareQuery)
 
-  private def expandQuery[T](quoted: Tree, method: ContextMethod)(implicit t: WeakTypeTag[T]) =
-    OptionalTypecheck(c)(q"implicitly[${c.prefix}.Decoder[$t]]") match {
-      case Some(decoder) => expandQueryWithDecoder(quoted, method, decoder)
-      case None          => expandQueryWithMeta[T](quoted, method)
+  private def expandQuery[T](quoted: Tree, method: ContextMethod)(implicit t: WeakTypeTag[T]) = {
+    if (quoted.tpe <:< c.typecheck(tq"${c.prefix}.Quoted[${c.prefix}.EntityQuery[$t]]", c.TYPEmode).tpe) {
+      expandQueryWithMeta[T](quoted, method)
+    } else {
+      OptionalTypecheck(c)(q"implicitly[${c.prefix}.Decoder[$t]]") match {
+        case Some(decoder) => expandQueryWithDecoder(quoted, method, decoder)
+        case None          => expandQueryWithMeta[T](quoted, method)
+      }
     }
+  }
 
   private def expandQueryWithDecoder(quoted: Tree, method: ContextMethod, decoder: Tree) = {
     val extracted = extractAst(quoted)
