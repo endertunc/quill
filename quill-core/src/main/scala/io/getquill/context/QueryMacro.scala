@@ -18,23 +18,16 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
   case object DefaultPrint extends PrettyPrintingArg
 
   sealed trait ContextMethod { def name: String }
-  case class StreamQuery(fetchSizeBehavior: FetchSizeArg)
-    extends ContextMethod { val name = "streamQuery" }
+  case class StreamQuery(fetchSizeBehavior: FetchSizeArg) extends ContextMethod { val name = "streamQuery" }
   case object ExecuteQuery extends ContextMethod { val name = "executeQuery" }
-  case object ExecuteQuerySingle extends ContextMethod {
-    val name = "executeQuerySingle"
-  }
-  case class TranslateQuery(prettyPrintingArg: PrettyPrintingArg)
-    extends ContextMethod { val name = "translateQuery" }
+  case object ExecuteQuerySingle extends ContextMethod { val name = "executeQuerySingle" }
+  case class TranslateQuery(prettyPrintingArg: PrettyPrintingArg) extends ContextMethod { val name = "translateQuery" }
   case object PrepareQuery extends ContextMethod { val name = "prepareQuery" }
 
   def streamQuery[T](quoted: Tree)(implicit t: WeakTypeTag[T]): Tree =
     expandQuery[T](quoted, StreamQuery(UsesDefaultFetch))
 
-  def streamQueryFetch[T](quoted: Tree, fetchSize: Tree)(
-    implicit
-    t: WeakTypeTag[T]
-  ): Tree =
+  def streamQueryFetch[T](quoted: Tree, fetchSize: Tree)(implicit t: WeakTypeTag[T]): Tree =
     expandQuery[T](quoted, StreamQuery(UsesExplicitFetch(fetchSize)))
 
   def runQuery[T](quoted: Tree)(implicit t: WeakTypeTag[T]): Tree =
@@ -46,41 +39,20 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
   def translateQuery[T](quoted: Tree)(implicit t: WeakTypeTag[T]): Tree =
     expandQuery[T](quoted, TranslateQuery(DefaultPrint))
 
-  def translateQueryPrettyPrint[T](quoted: Tree, prettyPrint: Tree)(
-    implicit
-    t: WeakTypeTag[T]
-  ): Tree =
+  def translateQueryPrettyPrint[T](quoted: Tree, prettyPrint: Tree)(implicit t: WeakTypeTag[T]): Tree =
     expandQuery[T](quoted, TranslateQuery(ExplicitPrettyPrint(prettyPrint)))
 
-  def prepareQuery[T](quoted: Tree)(implicit t: WeakTypeTag[T]): Tree = {
-    val tree = expandQuery[T](quoted, PrepareQuery)
-    tree
-  }
+  def prepareQuery[T](quoted: Tree)(implicit t: WeakTypeTag[T]): Tree =
+    expandQuery[T](quoted, PrepareQuery)
 
-  private def expandQuery[T](quoted: Tree, method: ContextMethod)(
-    implicit
-    t: WeakTypeTag[T]
-  ) = {
-    if (quoted.tpe <:< c
-      .typecheck(
-        tq"${c.prefix}.Quoted[${c.prefix}.EntityQuery[_]]",
-        c.TYPEmode
-      )
-      .tpe) {
-      expandQueryWithMeta[T](quoted, method)
-    } else {
-      OptionalTypecheck(c)(q"implicitly[${c.prefix}.Decoder[$t]]") match {
-        case Some(decoder) => expandQueryWithDecoder(quoted, method, decoder)
-        case None          => expandQueryWithMeta[T](quoted, method)
-      }
+  private def expandQuery[T](quoted: Tree, method: ContextMethod)(implicit t: WeakTypeTag[T]) = {
+    OptionalTypecheck(c)(q"implicitly[${c.prefix}.Decoder[$t]]") match {
+      case Some(decoder) => expandQueryWithDecoder(quoted, method, decoder)
+      case None          => expandQueryWithMeta[T](quoted, method)
     }
   }
 
-  private def expandQueryWithDecoder(
-    quoted:  Tree,
-    method:  ContextMethod,
-    decoder: Tree
-  ) = {
+  private def expandQueryWithDecoder(quoted: Tree, method: ContextMethod, decoder: Tree) = {
     val extracted = extractAst(quoted)
     val ast = extracted match {
       case i: Infix => i
@@ -132,7 +104,7 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
               prettyPrint = false
             )
            """
-        case r =>
+        case _ =>
           logged {
             q"""
               ${c.prefix}.${TermName(method.name)}(
@@ -153,17 +125,10 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
     }
   }
 
-  private def expandQueryWithMeta[T](quoted: Tree, method: ContextMethod)(
-    implicit
-    t: WeakTypeTag[T]
-  ) = {
+  private def expandQueryWithMeta[T](quoted: Tree, method: ContextMethod)(implicit t: WeakTypeTag[T]) = {
     val metaTpe = c.typecheck(tq"${c.prefix}.QueryMeta[$t]", c.TYPEmode).tpe
-    val meta = c
-      .inferImplicitValue(metaTpe)
-      .orElse(q"${c.prefix}.materializeQueryMeta[$t]")
-    val ast = extractAst(
-      c.typecheck(q"${c.prefix}.quote($meta.expand($quoted))")
-    )
+    val meta = c.inferImplicitValue(metaTpe).orElse(q"${c.prefix}.materializeQueryMeta[$t]")
+    val ast = extractAst(c.typecheck(q"${c.prefix}.quote($meta.expand($quoted))"))
     val invocation =
       method match {
         case StreamQuery(UsesExplicitFetch(size)) =>
@@ -210,7 +175,7 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
               prettyPrint = false
             )
            """
-        case m if m != PrepareQuery =>
+        case _ =>
           logged {
             q"""
             ${c.prefix}.${TermName(method.name)}(
@@ -220,14 +185,6 @@ class QueryMacro(val c: MacroContext) extends ContextMacro {
             )
            """
           }
-        case m =>
-          q"""
-            ${c.prefix}.${TermName(method.name)}(
-              expanded.string,
-              expanded.prepare,
-              $meta.extract
-            )
-           """
       }
 
     c.untypecheck {
