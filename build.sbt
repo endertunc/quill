@@ -67,7 +67,7 @@ val filteredModules = {
       val scalaVersion = sys.props.get("quill.scala.version")
       if(scalaVersion.map(_.startsWith("2.13")).getOrElse(false)) {
         println("Compiling Scala 2.13 Modules")
-        baseModules ++ dbModules ++ asyncEffectModules
+        baseModules ++ dbModules ++ asyncEffectModules ++ asyncModules
       } else {
         println("Compiling All Modules")
         allModules
