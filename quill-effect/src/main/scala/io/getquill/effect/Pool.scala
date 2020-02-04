@@ -6,6 +6,7 @@ import cats.effect.syntax.all._
 import cats.instances.vector._
 import cats.syntax.all._
 import java.util.concurrent.atomic._
+import org.slf4j._
 import scala.language.higherKinds
 import scala.concurrent.duration._
 
@@ -80,6 +81,8 @@ private final class SelfHealing[F[_], C](
   ref:    Ref[F, Option[Conn[C]]]
 )(implicit F: Concurrent[F], T: Timer[F]) {
 
+  private val logger = LoggerFactory.getLogger(classOf[SelfHealing[F, C]])
+
   def get = healed
 
   def release = ref.get.flatMap {
@@ -88,7 +91,10 @@ private final class SelfHealing[F[_], C](
   }
 
   private def tryRelease(c: Conn[C]): F[Unit] = {
-    F.race(config.release(c.c), T.sleep(3.seconds)).void
+    val release = Either.catchNonFatal(config.release(c.c)).liftTo[F].flatten.handleError { e =>
+      logger.warn(s"[SelfHealing-tryRelease] Error release connection", e)
+    }
+    F.race(release, T.sleep(3.seconds)).void
   }
 
   private def replace(old: Conn[C]): F[Conn[C]] = {
