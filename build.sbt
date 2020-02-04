@@ -25,7 +25,7 @@ lazy val asyncModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
 )
 
 lazy val asyncEffectModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
-  `quill-effect`, `quill-async-effect`, `quill-effect-postgres`, `quill-effect-mysql`
+  `quill-async`, `quill-effect`, `quill-async-effect`, `quill-effect-postgres`, `quill-effect-mysql`
 )
 
 lazy val codegenModules = Seq[sbt.ClasspathDep[sbt.ProjectReference]](
@@ -67,7 +67,7 @@ val filteredModules = {
       val scalaVersion = sys.props.get("quill.scala.version")
       if(scalaVersion.map(_.startsWith("2.13")).getOrElse(false)) {
         println("Compiling Scala 2.13 Modules")
-        baseModules ++ dbModules ++ asyncEffectModules ++ asyncModules
+        baseModules ++ dbModules ++ asyncEffectModules
       } else {
         println("Compiling All Modules")
         allModules
