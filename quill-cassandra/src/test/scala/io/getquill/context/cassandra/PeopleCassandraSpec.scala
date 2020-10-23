@@ -8,7 +8,7 @@ class PeopleCassandraSpec extends Spec {
 
   case class Person(id: Int, name: String, age: Int)
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     val entries = List(
       Person(1, "Bob", 30),
       Person(2, "Gus", 40),

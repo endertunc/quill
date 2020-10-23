@@ -12,7 +12,7 @@ class ProductFinaglePostgresSpec extends ProductSpec {
 
   def await[T](r: Future[T]) = Await.result(r)
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     await(testContext.run(quote(query[Product].delete)))
     ()
   }

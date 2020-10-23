@@ -8,7 +8,7 @@ class TransactionSpec extends PeopleSpec {
   val context = testContext
   import testContext.{ io => _, _ }
 
-  override def beforeAll =
+  override def beforeAll(): Unit =
     awaitIO {
       val acts = for {
         _ <- testContext.run(query[Couple].delete)

@@ -21,7 +21,7 @@ class QueryResultTypeCassandraAsyncSpec extends QueryResultTypeCassandraSpec {
     await(future)
   }
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     result(context.run(deleteAll))
     result(context.run(liftQuery(entries).foreach(e => insert(e))))
     ()

@@ -19,7 +19,7 @@ class TransactionalExecutionContextSpec extends Spec {
       override def run = {}
     }
     TransactionalExecutionContext(ec, null).execute(runnable)
-    executed.result mustEqual List(runnable)
+    executed.result() mustEqual List(runnable)
   }
 
   "uses the wrapped context to report errors" in {
@@ -32,6 +32,6 @@ class TransactionalExecutionContextSpec extends Spec {
     }
     val exception = new IllegalStateException
     TransactionalExecutionContext(ec, null).reportFailure(exception)
-    reported.result mustEqual List(exception)
+    reported.result() mustEqual List(exception)
   }
 }

@@ -17,7 +17,7 @@ class QueryResultTypeCassandraMonixSpec extends QueryResultTypeCassandraSpec {
   def result[T](t: Observable[T]) =
     await(t.foldLeftL(List.empty[T])(_ :+ _).runToFuture)
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     result(context.run(deleteAll))
     result(context.run(liftQuery(entries).foreach(e => insert(e))))
     ()

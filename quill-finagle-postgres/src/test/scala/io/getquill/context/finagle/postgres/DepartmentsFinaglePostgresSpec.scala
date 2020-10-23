@@ -12,7 +12,7 @@ class DepartmentsPostgresMysqlSpec extends DepartmentsSpec {
 
   def await[T](future: Future[T]) = Await.result(future)
 
-  override def beforeAll =
+  override def beforeAll(): Unit =
     await {
       testContext.transaction {
         for {
