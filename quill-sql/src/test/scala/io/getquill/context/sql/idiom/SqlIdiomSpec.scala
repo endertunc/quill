@@ -1088,6 +1088,10 @@ class SqlIdiomSpec extends Spec {
         testContext.run(infix"SELECT * FROM TestEntity".as[Query[TestEntity]]).string mustEqual
           "SELECT x.s, x.i, x.l, x.o FROM (SELECT * FROM TestEntity) AS x"
       }
+      "full infix query & noParen" in {
+        testContext.run(infix"TestEntyCopy".noParen.as[Query[TestEntity]]).string mustEqual
+          "SELECT x.s, x.i, x.l, x.o FROM TestEntyCopy AS x"
+      }
       "full infix action" in {
         testContext.run(infix"DELETE FROM TestEntity".as[Action[TestEntity]]).string mustEqual
           "DELETE FROM TestEntity"

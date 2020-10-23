@@ -46,7 +46,7 @@ trait ArrayDecoders extends ArrayEncoding {
         case (b, x: java.lang.Number) => b += mapper(x.asInstanceOf[I])
         case (_, x) =>
           fail(s"Retrieved ${x.getClass.getCanonicalName} type from JDBC array, but expected $tag. Re-check your decoder implementation")
-      }.result
+      }.result()
     })
   }
 

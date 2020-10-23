@@ -52,6 +52,6 @@ trait ArrayEncoding {
     bf:     Factory[O, Col[O]]
   ): Decoder[Col[O]] = {
     mappedDecoder[Seq[I], Col[O]](MappedEncoding((col: Seq[I]) =>
-      col.foldLeft(bf.newBuilder)((b, x) => b += mapped.f(x)).result), d)
+      col.foldLeft(bf.newBuilder)((b, x) => b += mapped.f(x)).result()), d)
   }
 }

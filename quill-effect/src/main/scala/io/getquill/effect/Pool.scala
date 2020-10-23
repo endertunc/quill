@@ -171,12 +171,15 @@ private final class Queue[F[_], A](ref: Ref[F, State[F, A]])(implicit F: Concurr
         val timeout = timer.sleep(duration)
         F.race(timeout, defer.get).flatMap {
           case Right(v) => F.pure(Some(v))
-          case Left(_)  => cancel.as(None)
+          case Left(_) => cancel.flatMap {
+            case true  => F.pure(None)
+            case false => defer.get.map(_.some)
+          }
         }
     }
   }
 
-  private def cancellableDequeue1(): F[(Either[Deferred[F, A], A], F[Unit])] = {
+  private def cancellableDequeue1(): F[(Either[Deferred[F, A], A], F[Boolean])] = {
     Deferred[F, A].flatMap { defer =>
       ref.modify { s =>
         if (s.queue.isEmpty)
@@ -185,10 +188,11 @@ private final class Queue[F[_], A](ref: Ref[F, State[F, A]])(implicit F: Concurr
           (s.copy(queue = s.queue.drop(1)), Some(s.queue.take(1).head))
       }.map {
         case Some(h) =>
-          (Right(h), F.unit)
+          (Right(h), F.pure(true))
         case None =>
           (Left(defer), ref.modify { s =>
-            (s.copy(deq = s.deq.filterNot(_ == defer)), {})
+            val exists = s.deq.exists(_ == defer)
+            (s.copy(deq = s.deq.filterNot(_ == defer)), exists)
           })
       }
     }

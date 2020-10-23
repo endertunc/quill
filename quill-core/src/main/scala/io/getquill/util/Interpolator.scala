@@ -111,7 +111,7 @@ class Interpolator(
       (output.mkString, indent)
     }
 
-    private def logIfEnabled[T]() =
+    private def logIfEnabled[T] =
       if (tracesEnabled(traceType))
         Some(generateString())
       else
@@ -126,7 +126,7 @@ class Interpolator(
     }
 
     def andReturn[T](command: => T) = {
-      logIfEnabled() match {
+      logIfEnabled match {
         case Some((output, indent)) =>
           // do the initial log
           out.println(output)

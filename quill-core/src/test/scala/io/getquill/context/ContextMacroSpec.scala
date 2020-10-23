@@ -204,7 +204,7 @@ class ContextMacroSpec extends Spec {
           infix"SELECT ${lift("a")}".as[Query[String]]
         }
         val r = testContext.run(q)
-        r.string mustEqual s"""infix"SELECT $${?}".map(x => x)"""
+        r.string mustEqual s"""infix"SELECT $${?}""""
         r.prepareRow mustEqual Row("a")
       }
       "dynamic" in {
@@ -291,7 +291,7 @@ class ContextMacroSpec extends Spec {
         val q = quote {
           infix"SELECT ${lift("a")}".as[Query[String]]
         }
-        testContext.translate(q) mustEqual s"""infix"SELECT $${'a'}".map(x => x)"""
+        testContext.translate(q) mustEqual s"""infix"SELECT $${'a'}""""
       }
       "dynamic" in {
         val q = quote {

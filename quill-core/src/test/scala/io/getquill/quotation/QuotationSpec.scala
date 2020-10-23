@@ -1121,20 +1121,25 @@ class QuotationSpec extends Spec {
         val q = quote {
           infix"true"
         }
-        quote(unquote(q)).ast mustEqual Infix(List("true"), Nil, false)
+        quote(unquote(q)).ast mustEqual Infix(List("true"), Nil, false, false)
       }
       "with `as`" in {
         val q = quote {
           infix"true".as[Boolean]
         }
-        quote(unquote(q)).ast mustEqual Infix(List("true"), Nil, false)
+        quote(unquote(q)).ast mustEqual Infix(List("true"), Nil, false, false)
       }
       "with params" in {
         val q = quote {
           (a: String, b: String) =>
             infix"$a || $b".as[String]
         }
-        quote(unquote(q)).ast.body mustEqual Infix(List("", " || ", ""), List(Ident("a"), Ident("b")), false)
+        quote(unquote(q)).ast.body mustEqual Infix(List("", " || ", ""), List(Ident("a"), Ident("b")), false, false)
+      }
+      "noParen" in {
+        val q = quote(infix"true".noParen.as[Boolean])
+        quote(unquote(q)).ast mustEqual Infix(List("true"), Nil, false, true)
+
       }
       "with dynamic string" - {
         "at the end - pure" in {
@@ -1144,7 +1149,7 @@ class QuotationSpec extends Spec {
               infix"$a || #$b".pure.as[String]
           }
           quote(unquote(q)).ast must matchPattern {
-            case Function(_, Infix(List("", " || dyn"), List(Ident("a")), true)) =>
+            case Function(_, Infix(List("", " || dyn"), List(Ident("a")), true, false)) =>
           }
         }
         "at the end" in {
@@ -1154,7 +1159,7 @@ class QuotationSpec extends Spec {
               infix"$a || #$b".as[String]
           }
           quote(unquote(q)).ast must matchPattern {
-            case Function(_, Infix(List("", " || dyn"), List(Ident("a")), false)) =>
+            case Function(_, Infix(List("", " || dyn"), List(Ident("a")), false, false)) =>
           }
         }
         "at the beginning - pure" in {
@@ -1164,7 +1169,7 @@ class QuotationSpec extends Spec {
               infix"#$a || $b".pure.as[String]
           }
           quote(unquote(q)).ast must matchPattern {
-            case Function(_, Infix(List("dyn || ", ""), List(Ident("b")), true)) =>
+            case Function(_, Infix(List("dyn || ", ""), List(Ident("b")), true, false)) =>
           }
         }
         "at the beginning" in {
@@ -1174,7 +1179,7 @@ class QuotationSpec extends Spec {
               infix"#$a || $b".as[String]
           }
           quote(unquote(q)).ast must matchPattern {
-            case Function(_, Infix(List("dyn || ", ""), List(Ident("b")), false)) =>
+            case Function(_, Infix(List("dyn || ", ""), List(Ident("b")), false, false)) =>
           }
         }
         "only" in {
@@ -1182,7 +1187,7 @@ class QuotationSpec extends Spec {
           val q = quote {
             infix"#$a".as[String]
           }
-          quote(unquote(q)).ast mustEqual Infix(List("dyn1"), List(), false)
+          quote(unquote(q)).ast mustEqual Infix(List("dyn1"), List(), false, false)
         }
         "sequential - pure" in {
           val a = "dyn1"
@@ -1190,7 +1195,7 @@ class QuotationSpec extends Spec {
           val q = quote {
             infix"#$a#$b".pure.as[String]
           }
-          quote(unquote(q)).ast mustEqual Infix(List("dyn1dyn2"), List(), true)
+          quote(unquote(q)).ast mustEqual Infix(List("dyn1dyn2"), List(), true, false)
         }
         "sequential" in {
           val a = "dyn1"
@@ -1198,7 +1203,7 @@ class QuotationSpec extends Spec {
           val q = quote {
             infix"#$a#$b".as[String]
           }
-          quote(unquote(q)).ast mustEqual Infix(List("dyn1dyn2"), List(), false)
+          quote(unquote(q)).ast mustEqual Infix(List("dyn1dyn2"), List(), false, false)
         }
         "non-string value" in {
           case class Value(a: String)
@@ -1206,7 +1211,7 @@ class QuotationSpec extends Spec {
           val q = quote {
             infix"#$a".as[String]
           }
-          quote(unquote(q)).ast mustEqual Infix(List("Value(dyn)"), List(), false)
+          quote(unquote(q)).ast mustEqual Infix(List("Value(dyn)"), List(), false, false)
         }
       }
     }

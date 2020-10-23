@@ -256,9 +256,12 @@ trait SqlIdiom extends Idiom {
   implicit def sourceTokenizer(implicit astTokenizer: Tokenizer[Ast], strategy: NamingStrategy): Tokenizer[FromContext] = Tokenizer[FromContext] {
     case TableContext(name, alias)  => stmt"${name.token} ${tokenizeAlias(strategy, alias).token}"
     case QueryContext(query, alias) => stmt"(${query.token}) AS ${tokenizeAlias(strategy, alias).token}"
-    case InfixContext(infix, alias) => stmt"(${(infix: Ast).token}) AS ${strategy.default(alias).token}"
-    case JoinContext(t, a, b, on)   => stmt"${a.token} ${t.token} ${b.token} ON ${on.token}"
-    case FlatJoinContext(t, a, on)  => stmt"${t.token} ${a.token} ON ${on.token}"
+    case InfixContext(infix, alias) if infix.noParen =>
+      stmt"${(infix: Ast).token} AS ${strategy.default(alias).token}"
+    case InfixContext(infix, alias) =>
+      stmt"(${(infix: Ast).token}) AS ${strategy.default(alias).token}"
+    case JoinContext(t, a, b, on)  => stmt"${a.token} ${t.token} ${b.token} ON ${on.token}"
+    case FlatJoinContext(t, a, on) => stmt"${t.token} ${a.token} ON ${on.token}"
   }
 
   implicit val joinTypeTokenizer: Tokenizer[JoinType] = Tokenizer[JoinType] {
@@ -380,7 +383,7 @@ trait SqlIdiom extends Idiom {
   }
 
   implicit def infixTokenizer(implicit astTokenizer: Tokenizer[Ast], strategy: NamingStrategy): Tokenizer[Infix] = Tokenizer[Infix] {
-    case Infix(parts, params, _) =>
+    case Infix(parts, params, _, _) =>
       val pt = parts.map(_.token)
       val pr = params.map(_.token)
       Statement(Interleave(pt, pr))
