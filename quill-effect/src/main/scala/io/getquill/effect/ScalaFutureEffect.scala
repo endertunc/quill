@@ -19,7 +19,7 @@ trait ScalaFutureEffect[F[_], C] extends Effect[Future, C] { this: Context[_, _]
 
   protected def performEffect[A](f: C => Future[A], transactional: Boolean): F[A]
 
-  implicit class DBIOSyntax[A](dbio: DBIO[C, Future, A]) {
+  implicit class DBIOMonadSyntax1[A](dbio: DBIO[C, Future, A]) {
     private def run(transactional: Boolean): F[A] = performEffect(dbio.f, transactional)
 
     def run: F[A] = run(false)

@@ -19,7 +19,7 @@ class ConnectionLeakTest extends ProductSpec {
   val context = new PostgresMonixJdbcContext(Literal, dataSource, Runner.default)
   import context._
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     context.run(quote(query[Product].delete)).runSyncUnsafe()
     ()
   }

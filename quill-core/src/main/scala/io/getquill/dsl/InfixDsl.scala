@@ -8,6 +8,7 @@ private[dsl] trait InfixDsl {
   private[dsl] trait InfixValue {
     def as[T]: T
     def pure: InfixValue
+    def noParen: InfixValue
   }
 
   implicit class InfixInterpolator(val sc: StringContext) {

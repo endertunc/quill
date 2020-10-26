@@ -52,7 +52,7 @@ class CaseClassQueryOrientSpec extends Spec {
     new Contact(1, "Alex", "Jones", 60, 2, "foo")
   )
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     testSyncDB.run(query[Contact].delete)
     testSyncDB.run(query[Address].delete)
     testSyncDB.run(liftQuery(peopleEntries).foreach(p => peopleInsert(p)))

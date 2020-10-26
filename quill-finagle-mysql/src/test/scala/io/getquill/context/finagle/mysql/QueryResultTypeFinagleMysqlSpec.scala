@@ -14,7 +14,7 @@ class QueryResultTypeFinagleMysqlSpec extends QueryResultTypeSpec {
 
   val insertedProducts = new ConcurrentLinkedQueue[Product]
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     await(testContext.run(deleteAll))
     val rs = await(testContext.run(liftQuery(productEntries).foreach(e => productInsert(e))))
     val inserted = (rs zip productEntries).map {

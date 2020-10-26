@@ -28,7 +28,7 @@ class ResultSetIteratorSpec extends FreeSpec with MustMatchers with BeforeAndAft
     Person("Cora", 33)
   )
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     ctx.transaction {
       for {
         _ <- ctx.run(query[Person].delete)

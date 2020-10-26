@@ -8,7 +8,7 @@ class PeopleMonixJdbcSpec extends PeopleMonixSpec {
   val context = testContext
   import testContext._
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     testContext.transaction {
       for {
         _ <- testContext.run(query[Couple].delete)

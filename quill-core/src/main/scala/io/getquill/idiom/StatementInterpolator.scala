@@ -121,10 +121,10 @@ object StatementInterpolator {
       val bldr = List.newBuilder[Token]
       bldr += StringToken(partsIterator.next())
       while (argsIterator.hasNext) {
-        bldr += argsIterator.next
+        bldr += argsIterator.next()
         bldr += StringToken(partsIterator.next())
       }
-      val tokens = flatten(bldr.result)
+      val tokens = flatten(bldr.result())
       Statement(tokens)
     }
   }

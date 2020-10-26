@@ -10,7 +10,7 @@ class ProductPostgresAsyncSpec extends ProductSpec {
   val context = testContext
   import testContext.{ io => _, _ }
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     awaitIO(testContext.io(quote(query[Product].delete)).run)
     ()
   }

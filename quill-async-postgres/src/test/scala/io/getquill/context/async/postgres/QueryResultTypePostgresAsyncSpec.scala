@@ -16,7 +16,7 @@ class QueryResultTypePostgresAsyncSpec extends QueryResultTypeSpec {
 
   val insertedProducts = new ConcurrentLinkedQueue[Product]
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     await(testContext.run(deleteAll))
     val ids = await(testContext.run(liftQuery(productEntries).foreach(e => productInsert(e))))
     val inserted = (ids zip productEntries).map {

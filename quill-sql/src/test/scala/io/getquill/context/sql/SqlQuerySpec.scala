@@ -184,7 +184,7 @@ class SqlQuerySpec extends Spec {
           infix"""SELECT t.i FROM TestEntity t""".as[Query[Int]]
         }
         testContext.run(q).string mustEqual
-          """SELECT x.* FROM (SELECT t.i FROM TestEntity t) AS x"""
+          """SELECT t.i FROM TestEntity t"""
       }
     }
 

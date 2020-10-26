@@ -9,7 +9,7 @@ class PeoplePostgresAsyncSpec extends PeopleSpec {
   val context = testContext
   import testContext._
 
-  override def beforeAll =
+  override def beforeAll(): Unit =
     await {
       testContext.transaction { implicit ec =>
         for {

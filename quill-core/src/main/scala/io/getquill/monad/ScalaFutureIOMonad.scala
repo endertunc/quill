@@ -31,7 +31,7 @@ trait ScalaFutureIOMonad extends IOMonad {
         r <- fr
         a <- performIO(ioa)
       } yield r += a
-    }.map(_.result)
+    }.map(_.result())
   }
 
   def performIO[T](io: IO[T, _], transactional: Boolean = false)(implicit ec: ExecutionContext): Result[T] =

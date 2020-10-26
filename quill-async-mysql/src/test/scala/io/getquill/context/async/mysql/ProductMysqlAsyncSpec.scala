@@ -11,7 +11,7 @@ class ProductMysqlAsyncSpec extends ProductSpec {
   val context = testContext
   import testContext._
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     await(testContext.run(quote(query[Product].delete)))
     ()
   }

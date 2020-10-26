@@ -15,7 +15,7 @@ class QueryResultTypeCassandraStreamSpec extends QueryResultTypeCassandraSpec {
     await(stream.runFold(List.empty[T])(_ :+ _))
   }
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     result(context.run(deleteAll))
     result(context.run(liftQuery(entries).foreach(e => insert(e))))
     ()

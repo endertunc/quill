@@ -281,16 +281,18 @@ trait Parsing extends ValueComputation {
 
   val infixParser: Parser[Ast] = Parser[Ast] {
     case q"$infix.pure.as[$t]" =>
-      combinedInfixParser(true)(infix)
+      combinedInfixParser(true, false)(infix)
+    case q"$infix.noParen.as[$t]" =>
+      combinedInfixParser(false, true)(infix)
     case q"$infix.as[$t]" =>
-      combinedInfixParser(false)(infix)
+      combinedInfixParser(false, false)(infix)
     case `impureInfixParser`(value) =>
       value
   }
 
-  val impureInfixParser = combinedInfixParser(false)
+  val impureInfixParser = combinedInfixParser(false, false)
 
-  def combinedInfixParser(infixIsPure: Boolean): Parser[Ast] = Parser[Ast] {
+  def combinedInfixParser(infixIsPure: Boolean, noParen: Boolean): Parser[Ast] = Parser[Ast] {
     case q"$pack.InfixInterpolator(scala.StringContext.apply(..${ parts: List[String] })).infix(..$params)" =>
       if (parts.find(_.endsWith("#")).isDefined) {
         val elements =
@@ -325,12 +327,12 @@ trait Parsing extends ValueComputation {
         Dynamic {
           c.typecheck(q"""
             new ${c.prefix}.Quoted[Any] {
-              override def ast = io.getquill.ast.Infix($newParts, $newParams, $infixIsPure)
+              override def ast = io.getquill.ast.Infix($newParts, $newParams, $infixIsPure, $noParen)
             }
           """)
         }
       } else
-        Infix(parts, params.map(astParser(_)), infixIsPure)
+        Infix(parts, params.map(astParser(_)), infixIsPure, noParen)
   }
 
   val functionParser: Parser[Function] = Parser[Function] {

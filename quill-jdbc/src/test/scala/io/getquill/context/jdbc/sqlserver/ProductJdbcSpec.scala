@@ -7,7 +7,7 @@ class ProductJdbcSpec extends ProductSpec {
   val context = testContext
   import testContext._
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     testContext.run(quote(query[Product].delete))
     ()
   }

@@ -49,7 +49,7 @@ class TransactionSpec extends ProductSpec {
     res mustEqual p.copy(id = res.id)
   }
 
-  override def beforeAll = {
+  override def beforeAll(): Unit = {
     await(context.run(quote { query[Product].delete }))
     ()
   }
