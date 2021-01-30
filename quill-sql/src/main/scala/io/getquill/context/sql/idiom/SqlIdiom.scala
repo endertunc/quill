@@ -1,6 +1,7 @@
 package io.getquill.context.sql.idiom
 
 import com.github.vertical_blank.sqlformatter.scala.SqlFormatter
+import io.getquill.NormalizeCaching
 import io.getquill.ast._
 import io.getquill.ast.BooleanOperator._
 import io.getquill.ast.Lift
@@ -34,8 +35,12 @@ trait SqlIdiom extends Idiom {
 
   def querifyAst(ast: Ast) = SqlQuery(ast)
 
-  override def translate(ast: Ast)(implicit naming: NamingStrategy) = {
-    val normalizedAst = SqlNormalize(ast, concatBehavior, equalityBehavior)
+  private def doTranslate(ast: Ast, cached: Boolean)(implicit naming: NamingStrategy): (Ast, Statement) = {
+    val normalizedAst = {
+      if (cached) {
+        NormalizeCaching { a: Ast => SqlNormalize(a, concatBehavior, equalityBehavior) }(ast)
+      } else SqlNormalize(ast, concatBehavior, equalityBehavior)
+    }
 
     implicit val tokernizer = defaultTokenizer
 
@@ -55,6 +60,13 @@ trait SqlIdiom extends Idiom {
       }
 
     (normalizedAst, stmt"$token")
+  }
+
+  override def translate(ast: Ast)(implicit naming: NamingStrategy): (Ast, Statement) = {
+    doTranslate(ast, false)
+  }
+  override def translateCached(ast: Ast)(implicit naming: NamingStrategy): (Ast, Statement) = {
+    doTranslate(ast, true)
   }
 
   def defaultTokenizer(implicit naming: NamingStrategy): Tokenizer[Ast] =

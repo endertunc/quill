@@ -1988,6 +1988,21 @@ dynamicQuery[Person].insertValue(p)
 dynamicQuery[Person].updateValue(p)
 ```
 
+### Dynamic query normalization cache
+
+Quill is super fast for static queries (almost zero overhead compared to directly sql executing).
+
+But there is significant impact for dynamic queries.
+
+Normalization caching was introduced to improve the situation, which can brings up to 80x times faster for complex queries. It is enabled by default.
+
+To disable dynamic caching, pass following property to sbt during compile time
+
+```
+sbt -Dquill.query.cacheDaynamic=false
+```
+
+
 # Extending quill
 
 ## Infix

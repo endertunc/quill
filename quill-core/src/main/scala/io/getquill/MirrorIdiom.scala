@@ -24,6 +24,11 @@ trait MirrorIdiomBase extends Idiom {
 
   override def liftingPlaceholder(index: Int): String = "?"
 
+  override def translateCached(ast: Ast)(implicit naming: NamingStrategy): (Ast, Statement) = {
+    val normalizedAst = NormalizeCaching(Normalize.apply)(ast)
+    (normalizedAst, stmt"${normalizedAst.token}")
+  }
+
   override def translate(ast: Ast)(implicit naming: NamingStrategy): (Ast, Statement) = {
     val normalizedAst = Normalize(ast)
     (normalizedAst, stmt"${normalizedAst.token}")

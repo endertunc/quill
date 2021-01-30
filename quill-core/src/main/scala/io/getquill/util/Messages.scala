@@ -17,6 +17,7 @@ object Messages {
   private[util] val traceColors = variable("quill.trace.color", "quill_trace_color,", "false").toBoolean
   private[util] val traceOpinions = variable("quill.trace.opinion", "quill_trace_opinion", "false").toBoolean
   private[util] val traceAstSimple = variable("quill.trace.ast.simple", "quill_trace_ast_simple", "false").toBoolean
+  private[getquill] val cacheDynamicQueries = variable("quill.query.cacheDaynamic", "query_query_cacheDaynamic", "true").toBoolean
   private[util] val traces: List[TraceType] =
     variable("quill.trace.types", "quill_trace_types", "standard")
       .split(",")

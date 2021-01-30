@@ -76,9 +76,12 @@ trait ContextMacro extends Quotation {
 
   private def translateDynamic(ast: Ast): Tree = {
     c.info("Dynamic query")
+    val translateMethod = if (io.getquill.util.Messages.cacheDynamicQueries) {
+      q"idiom.translateCached"
+    } else q"idiom.translate"
     q"""
       val (idiom, naming) = ${idiomAndNamingDynamic}
-      idiom.translate($ast)(naming)
+      $translateMethod($ast)(naming)
     """
   }
 

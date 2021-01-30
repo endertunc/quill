@@ -1,7 +1,7 @@
 package io.getquill.context.cassandra
 
 import io.getquill.ast.{ IterableOperation, _ }
-import io.getquill.NamingStrategy
+import io.getquill.{ NamingStrategy, NormalizeCaching }
 import io.getquill.context.CannotReturn
 import io.getquill.util.Messages.fail
 import io.getquill.idiom.Idiom
@@ -23,6 +23,11 @@ trait CqlIdiom extends Idiom {
 
   override def translate(ast: Ast)(implicit naming: NamingStrategy) = {
     val normalizedAst = CqlNormalize(ast)
+    (normalizedAst, stmt"${normalizedAst.token}")
+  }
+
+  override def translateCached(ast: Ast)(implicit naming: NamingStrategy) = {
+    val normalizedAst = NormalizeCaching(CqlNormalize.apply)(ast)
     (normalizedAst, stmt"${normalizedAst.token}")
   }
 

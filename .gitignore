@@ -31,4 +31,5 @@ nohup.out
 .metals/
 project/.bloop/
 /io/
+/.metadata/
 .bsp/
