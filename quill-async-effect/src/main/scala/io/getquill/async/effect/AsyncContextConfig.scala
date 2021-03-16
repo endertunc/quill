@@ -64,7 +64,6 @@ abstract class AsyncContextConfig[F[_]: Timer, C <: Connection](
   def poolMaxObjects = Try(config.getInt("poolMaxObjects")).getOrElse(32)
   def poolValidationInterval = Try(config.getLong("poolValidationInterval")).getOrElse(100000L)
   def poolReconnectInterval = Try(Duration(config.getString("poolReconnectInterval"))).getOrElse(5.seconds)
-  def poolReconnectFailures = Try(config.getInt("poolReconnectFailures")).getOrElse(20)
 
   private def fromFuture[A](f: => Future[A]): F[A] = {
     def toF: F[A] = {
@@ -91,13 +90,15 @@ abstract class AsyncContextConfig[F[_]: Timer, C <: Connection](
     PoolConfig[F, C](
       poolSize = poolMaxObjects,
       reconnectInterval = poolReconnectInterval.asInstanceOf[FiniteDuration],
-      minReconnectFailures = poolReconnectFailures,
       waitTimeout = queryTimeout.getOrElse(5.seconds).asInstanceOf[FiniteDuration],
-      factory = () => F.pure(connectionFactory(configuration)),
-      isDead = c => !c.isConnected,
-      connect = c => {
-        fromFuture(c.connect).void
+      factory = () => {
+        F.delay(connectionFactory(configuration)).flatMap { c =>
+          fromFuture(c.connect).map(_.asInstanceOf[C])
+        }
       },
+      check = c => {
+        fromFuture(c.sendQuery("SELECT 1"))
+      }.as(true),
       release = c => {
         if (c.isConnected) {
           fromFuture(c.disconnect).void

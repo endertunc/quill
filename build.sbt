@@ -151,7 +151,7 @@ lazy val `quill-effect` = (project in file("quill-effect"))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.typelevel" %% "cats-effect" % "2.0.0"
+      "org.typelevel" %% "cats-effect" % "2.3.3"
     )
   ).dependsOn(`quill-sql-jvm`)
 
