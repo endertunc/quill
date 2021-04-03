@@ -1,7 +1,6 @@
 package io.getquill.effect
 
 import cats.effect._
-import cats.instances.vector._
 import cats.syntax.all._
 import scala.language.higherKinds
 import scala.concurrent.duration._
@@ -13,7 +12,7 @@ trait Pool[F[_], C] {
 
 object Pool {
   object WaitTimeout extends Exception("WaitTimeout")
-  def apply[F[_], C](config: PoolConfig[F, C])(implicit F: ConcurrentEffect[F], T: Timer[F]): F[Pool[F, C]] = {
+  def apply[F[_], C](config: PoolConfig[F, C])(implicit F: Async[F]): F[Pool[F, C]] = {
 
     val healings: F[Vector[SelfHealing[F, C]]] = {
       Vector.fill(config.poolSize)(SelfHealing[F, C](config.factory(), config.release, config.check, config.reconnectInterval.toMillis)).sequence
@@ -25,18 +24,18 @@ object Pool {
   }
 }
 
-private class AsyncPool[F[_]: Timer: Sync, C](
+private class AsyncPool[F[_], C](
   config:  PoolConfig[F, C],
   conns:   Queue[F, SelfHealing[F, C]],
   holders: Vector[SelfHealing[F, C]]
-)(implicit F: Bracket[F, Throwable]) extends Pool[F, C] {
+)(implicit val F: Async[F]) extends Pool[F, C] {
 
   def close(): F[Unit] = {
     holders.traverse(_.release).void
   }
 
   def withConnection[B](f: C => F[B]): F[B] = {
-    val take: F[SelfHealing[F, C]] = conns.timedDequeue1(config.waitTimeout, Timer[F]).flatMap {
+    val take: F[SelfHealing[F, C]] = conns.timedDequeue1(config.waitTimeout).flatMap {
       case Some(c) => F.pure(c)
       case None    => F.raiseError(Pool.WaitTimeout)
     }
