@@ -10,16 +10,15 @@ import com.github.mauricio.async.db.SSLConfiguration
 import com.github.mauricio.async.db.util.AbstractURIParser
 import com.typesafe.config.Config
 import io.getquill.effect._
-import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util._
 import scala.language.higherKinds
 
-abstract class AsyncContextConfig[F[_]: Timer, C <: Connection](
+abstract class AsyncContextConfig[F[_], C <: Connection](
   config:            Config,
   connectionFactory: Configuration => C,
   uriParser:         AbstractURIParser
-)(implicit F: ConcurrentEffect[F], CS: ContextShift[F]) {
+)(implicit F: Async[F]) {
 
   def url = Try(config.getString("url")).toOption
   def user = Try(config.getString("user")).toOption
@@ -65,27 +64,6 @@ abstract class AsyncContextConfig[F[_]: Timer, C <: Connection](
   def poolValidationInterval = Try(config.getLong("poolValidationInterval")).getOrElse(100000L)
   def poolReconnectInterval = Try(Duration(config.getString("poolReconnectInterval"))).getOrElse(5.seconds)
 
-  private def fromFuture[A](f: => Future[A]): F[A] = {
-    def toF: F[A] = {
-      val strictF = f
-      strictF.value match {
-        case Some(result) =>
-          result match {
-            case Success(a) => F.pure(a)
-            case Failure(e) => F.raiseError(e)
-          }
-        case _ =>
-          F.async { cb =>
-            strictF.onComplete(r => cb(r match {
-              case Success(a) => Right(a)
-              case Failure(e) => Left(e)
-            }))(io.getquill.effect.trampoline)
-          }
-      }
-    }
-    F.guarantee(F.defer(toF))(CS.shift)
-  }
-
   def poolConfiguration =
     PoolConfig[F, C](
       poolSize = poolMaxObjects,
@@ -93,15 +71,15 @@ abstract class AsyncContextConfig[F[_]: Timer, C <: Connection](
       waitTimeout = queryTimeout.getOrElse(5.seconds).asInstanceOf[FiniteDuration],
       factory = () => {
         F.delay(connectionFactory(configuration)).flatMap { c =>
-          fromFuture(c.connect).map(_.asInstanceOf[C])
+          F.fromFuture(F.delay(c.connect)).map(_.asInstanceOf[C])
         }
       },
       check = c => {
-        fromFuture(c.sendQuery("SELECT 1"))
+        F.fromFuture(F.delay(c.sendQuery("SELECT 1")))
       }.as(true),
       release = c => {
         if (c.isConnected) {
-          fromFuture(c.disconnect).void
+          F.fromFuture(F.delay(c.disconnect)).void
         } else {
           F.unit
         }
