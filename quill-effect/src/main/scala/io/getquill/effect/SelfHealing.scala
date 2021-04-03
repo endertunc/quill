@@ -4,6 +4,7 @@ import scala.language.higherKinds
 import cats.syntax.all._
 import cats.effect._
 import cats.effect.syntax.all._
+import cats.effect.concurrent._
 import scala.concurrent.duration._
 import org.slf4j.LoggerFactory
 
@@ -14,7 +15,7 @@ trait SelfHealing[F[_], A] {
 
 object SelfHealing {
 
-  def apply[F[_]: Async, A](
+  def apply[F[_]: ConcurrentEffect: Timer, A](
     create:           F[A],
     release:          A => F[Unit],
     check:            A => F[Boolean],
@@ -22,9 +23,9 @@ object SelfHealing {
   ): F[SelfHealing[F, A]] = {
 
     for {
-      initConDefer <- Deferred[F, Either[Throwable, A]]
+      initConDefer <- Deferred.tryable[F, Either[Throwable, A]]
       _ <- create.attempt.flatMap(initConDefer.complete)
-      connRef <- Ref.of[F, Deferred[F, Either[Throwable, A]]](initConDefer)
+      connRef <- Ref.of[F, TryableDeferred[F, Either[Throwable, A]]](initConDefer)
       activeRef <- Ref.of[F, Long](System.currentTimeMillis)
     } yield new SelfHealingImpl(
       create,
@@ -36,11 +37,11 @@ object SelfHealing {
     )
   }
 
-  private class SelfHealingImpl[F[_]: Async, A](
+  private class SelfHealingImpl[F[_]: Concurrent: Timer, A](
     create:           F[A],
     release:          A => F[Unit],
     check:            A => F[Boolean],
-    ref:              Ref[F, Deferred[F, Either[Throwable, A]]],
+    ref:              Ref[F, TryableDeferred[F, Either[Throwable, A]]],
     lastSuccess:      Ref[F, Long], // last success op performed with this item
     minCheckInterval: Long
   ) extends SelfHealing[F, A] {
@@ -57,7 +58,7 @@ object SelfHealing {
         i <- healIfSick(la, d, stOrE).rethrow
       } yield i
       Resource.makeCase(acquire) {
-        case (_, Resource.ExitCase.Succeeded) =>
+        case (_, ExitCase.Completed) =>
           setActiveNow.void
         case _ =>
           ().pure[F]
@@ -79,12 +80,12 @@ object SelfHealing {
     private def now = Sync[F].delay(System.currentTimeMillis)
 
     private def tryWithIn[X](fx: => F[X], seconds: Int): F[Either[Unit, X]] = {
-      Concurrent[F].race(Clock[F].sleep(seconds.seconds), fx)
+      Concurrent[F].race(Timer[F].sleep(seconds.seconds), fx)
     }
 
     private def healIfSick(
       la:    Long,
-      defer: Deferred[F, Either[Throwable, A]],
+      defer: TryableDeferred[F, Either[Throwable, A]],
       eOrA:  Either[Throwable, A]
     ) = {
       eOrA match {
@@ -133,9 +134,9 @@ object SelfHealing {
     }
 
     private def healSick(
-      oldDefer: Deferred[F, Either[Throwable, A]]
+      oldDefer: TryableDeferred[F, Either[Throwable, A]]
     ): F[Either[Throwable, A]] = {
-      Deferred[F, Either[Throwable, A]].flatMap { defer =>
+      Deferred.tryable[F, Either[Throwable, A]].flatMap { defer =>
         ref.access.flatMap {
           case (old, setter) =>
             val updated = if (old == oldDefer) {

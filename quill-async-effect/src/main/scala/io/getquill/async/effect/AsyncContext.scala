@@ -27,7 +27,7 @@ import scala.language.higherKinds
 import scala.concurrent.Future
 import scala.util.Try
 
-abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Connection](val idiom: D, val naming: N, pool: Pool[F, C])(implicit _F: Async[F])
+abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Connection](val idiom: D, val naming: N, pool: Pool[F, C])(implicit _F: ConcurrentEffect[F], CS: ContextShift[F])
   extends Context[D, N]
   with TranslateContext
   with SqlContext[D, N]
@@ -48,10 +48,10 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
   override type RunBatchActionResult = Seq[Long]
   override type RunBatchActionReturningResult[T] = Seq[T]
 
-  private def fromFuture[A](f: => Future[A]): F[A] = _F.fromFuture { F.delay(f) }
+  private def fromFuture[A](f: => Future[A]): F[A] = Async.fromFuture { F.delay(f) }
 
   override def close = {
-    pool.close().unsafeRunSync()
+    F.toIO(pool.close()).unsafeRunSync()
   }
 
   protected def expandAction(sql: String, returningAction: ReturnAction) = sql
