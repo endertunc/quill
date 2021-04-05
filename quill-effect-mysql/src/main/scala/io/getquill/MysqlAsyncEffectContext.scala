@@ -13,7 +13,7 @@ import io.getquill.util.Messages.fail
 import io.getquill.util.LoadConfig
 import scala.language.higherKinds
 
-class MysqlAsyncEffectContext[F[_]: ConcurrentEffect: Timer: ContextShift, N <: NamingStrategy](
+class MysqlAsyncEffectContext[F[_]: Async: AsyncContext.RunEffect, N <: NamingStrategy](
   naming: N,
   pool:   Pool[F, MySQLConnection]
 ) extends AsyncContext[F, MySQLDialect, N, MySQLConnection](
@@ -23,7 +23,7 @@ class MysqlAsyncEffectContext[F[_]: ConcurrentEffect: Timer: ContextShift, N <: 
 ) with UUIDStringEncoding {
 
   def this(naming: N, config: MysqlAsyncEffectContextConfig[F]) = {
-    this(naming, config.pool)
+    this(naming, AsyncContext.unsafeRunEffect(config.pool))
   }
 
   def this(naming: N, config: Config) = {

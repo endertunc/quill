@@ -5,12 +5,8 @@ import cats.effect.IO
 import com.github.mauricio.async.db.SSLConfiguration
 import com.github.mauricio.async.db.SSLConfiguration.Mode
 import com.typesafe.config.{ ConfigFactory, ConfigValueFactory }
-import scala.concurrent.ExecutionContext
 
 class PostgresAsyncEffectContextConfigSpec extends Spec {
-
-  implicit val timer = IO.timer(ExecutionContext.global)
-  implicit val appCS = IO.contextShift(ExecutionContext.global)
 
   "parses ssl config" in {
     val config = ConfigFactory.empty()

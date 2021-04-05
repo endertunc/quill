@@ -86,5 +86,5 @@ abstract class AsyncContextConfig[F[_], C <: Connection](
       }
     )
 
-  def pool = F.toIO(Pool[F, C](poolConfiguration)).unsafeRunSync()
+  def pool = Pool[F, C](poolConfiguration)
 }

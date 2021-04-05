@@ -22,12 +22,21 @@ import io.getquill.context.sql.idiom.SqlIdiom
 import io.getquill.{ NamingStrategy, ReturnAction }
 import io.getquill.util.ContextLogger
 import io.getquill.context.{ Context, TranslateContext }
-
-import scala.language.higherKinds
 import scala.concurrent.Future
+import scala.language.higherKinds
 import scala.util.Try
 
-abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Connection](val idiom: D, val naming: N, pool: Pool[F, C])(implicit _F: Async[F])
+object AsyncContext {
+  trait RunEffect[F[_]] {
+    def unsafeRun[A](fa: F[A]): A
+  }
+
+  def unsafeRunEffect[F[_], A](fa: F[A])(implicit F: RunEffect[F]) = {
+    F.unsafeRun(fa)
+  }
+}
+
+abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Connection](val idiom: D, val naming: N, pool: Pool[F, C])(implicit _F: Async[F], _run: AsyncContext.RunEffect[F])
   extends Context[D, N]
   with TranslateContext
   with SqlContext[D, N]
@@ -50,8 +59,10 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
 
   private def fromFuture[A](f: => Future[A]): F[A] = _F.fromFuture { F.delay(f) }
 
-  override def close = {
-    pool.close().unsafeRunSync()
+  private def unsafeRun[A](fa: F[A]): A = AsyncContext.unsafeRunEffect(fa)
+
+  override def close() = {
+    unsafeRun(pool.close())
   }
 
   protected def expandAction(sql: String, returningAction: ReturnAction) = sql
@@ -74,7 +85,7 @@ abstract class AsyncContext[F[_], D <: SqlIdiom, N <: NamingStrategy, C <: Conne
 
   def probe(sql: String) =
     Try {
-      F.toIO(executeQuery(sql).run).unsafeRunSync()
+      unsafeRun(executeQuery(sql).run)
     }
 
   def executeQuery[T](sql: String, prepare: Prepare = identityPrepare, extractor: Extractor[T] = identityExtractor): Result[Seq[T]] = DBIO { c =>

@@ -8,5 +8,5 @@ import com.typesafe.config.Config
 import io.getquill.async.effect.AsyncContextConfig
 import scala.language.higherKinds
 
-case class PostgresAsyncEffectContextConfig[F[_]: ConcurrentEffect: Timer: ContextShift](config: Config, factory: Configuration => PostgreSQLConnection = { c => new PostgreSQLConnection(c) })
+case class PostgresAsyncEffectContextConfig[F[_]: Async](config: Config, factory: Configuration => PostgreSQLConnection = { c => new PostgreSQLConnection(c) })
   extends AsyncContextConfig[F, PostgreSQLConnection](config, factory, URLParser)

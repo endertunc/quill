@@ -17,7 +17,7 @@ import io.getquill.util.LoadConfig
 import scala.language.higherKinds
 import com.typesafe.config._
 
-class PostgresAsyncEffectContext[F[_]: ConcurrentEffect: Timer: ContextShift, D <: SqlIdiom, N <: NamingStrategy](
+class PostgresAsyncEffectContext[F[_]: Async: AsyncContext.RunEffect, D <: SqlIdiom, N <: NamingStrategy](
   idiom:  D,
   naming: N,
   pool:   Pool[F, PostgreSQLConnection]
@@ -27,7 +27,7 @@ class PostgresAsyncEffectContext[F[_]: ConcurrentEffect: Timer: ContextShift, D 
   with UUIDObjectEncoding {
 
   def this(idiom: D, naming: N, config: PostgresAsyncEffectContextConfig[F]) = {
-    this(idiom, naming, config.pool)
+    this(idiom, naming, AsyncContext.unsafeRunEffect(config.pool))
   }
 
   def this(idiom: D, naming: N, config: Config) = {

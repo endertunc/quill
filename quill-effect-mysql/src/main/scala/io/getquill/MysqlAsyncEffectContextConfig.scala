@@ -8,5 +8,5 @@ import com.typesafe.config.Config
 import io.getquill.async.effect.AsyncContextConfig
 import scala.language.higherKinds
 
-case class MysqlAsyncEffectContextConfig[F[_]: ConcurrentEffect: Timer: ContextShift](config: Config, factory: Configuration => MySQLConnection = { c => new MySQLConnection(c) })
+case class MysqlAsyncEffectContextConfig[F[_]: Async](config: Config, factory: Configuration => MySQLConnection = { c => new MySQLConnection(c) })
   extends AsyncContextConfig[F, MySQLConnection](config, factory, URLParser)
